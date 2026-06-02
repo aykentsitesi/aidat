@@ -10,7 +10,7 @@
         html{height:100%;overflow-y:scroll;overflow-x:hidden;-webkit-text-size-adjust:100%;}
         body{min-height:100%;overflow-x:hidden;background:#f3f6fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);font-weight:700;}
         
-        /* ── CLAUDE + GEMINI PREMIUM GLASSMORPHISM LOADER DESIGN ── */
+        /* ── PREMIUM GLASSMORPHISM LOADER DESIGN ── */
         #loader-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(145deg, #0f2747 0%, #1A2B48 50%, #07111f 100%);
@@ -110,7 +110,7 @@
 
         .duyuru{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(90deg,#8a6a22,#d6b25e,#8a6a22);color:#111827;text-align:center;padding:10px;font-size:15px;line-height:1.25;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.22);display:none;}
         .wrap{display:flex;justify-content:center;min-height:100vh;padding-top:41px;}
-        .card{width:100%;max-width:560px;background:white;padding-bottom:32px;box-shadow:0 16px 48px rgba(0,0,0,.16);border-radius:0 0 20px 20px; display: none;}
+        .card{width:100%;max-width:560px;background:white;padding-bottom:20px;box-shadow:0 16px 48px rgba(0,0,0,.16);border-radius:0 0 20px 20px; display: none;}
         
         .hero{background:radial-gradient(circle at top left,#355d93 0,#0f2747 42%,#07111f 100%);color:white;text-align:center;padding:26px 20px 22px;border-bottom:4px solid var(--gold);}
         .blok{font-size:31px;line-height:1.1;font-weight:950;letter-spacing:.2px;}
@@ -151,11 +151,24 @@
         .copy-btn:hover{background:linear-gradient(135deg,#145a32,#1e8449);box-shadow:0 4px 14px rgba(39,174,96,.45);}
         .copy-btn:active{transform:scale(.94);}
         
-        .footer{text-align:center;color:#667085;font-size:13px;padding:18px 10px 28px;font-weight:800;}
+        /* ── DİNAMİK WHATSAPP DESTEK BUTONU ── */
+        .whatsapp-container { padding: 8px 14px 0; display: none; }
+        .whatsapp-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; min-height: 50px; background: #25D366; color: white;
+            text-decoration: none; border-radius: 14px; font-size: 16px; font-weight: 950;
+            box-shadow: 0 4px 12px rgba(37,211,102,0.3); transition: background 0.3s, transform 0.2s;
+        }
+        .whatsapp-btn:hover { background: #20ba5a; transform: translateY(-1px); }
+        .whatsapp-btn:active { transform: translateY(1px); }
+
+        .footer{text-align:center;color:#667085;font-size:13px;padding:18px 10px 10px;font-weight:800;}
         .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1A2B48;color:#f4d47c;padding:12px 24px;border-radius:999px;font-size:16px;opacity:0;transition:opacity .2s ease;z-index:9999;font-weight:950;box-shadow:0 4px 16px rgba(0,0,0,.25);}
         .toast.show{opacity:1;}
         
-        .error-card{background:#fff1f2;color:#be123c;padding:20px;border-radius:12px;margin:20px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.1);display:none;}
+        /* ── Gelişmiş XSS Korumalı Hata Kartı ── */
+        .error-card{background:#fff1f2;color:#be123c;padding:26px 20px;border-radius:18px;margin:40px auto;max-width:400px;text-align:center;box-shadow:0 10px 25px rgba(190,18,60,0.15);border:1px solid #fecdd3;display:none;font-size:16px;line-height:1.4;}
+        .error-card strong { font-size: 19px; display: block; margin-bottom: 8px; font-weight: 950; }
 
         @media(max-width:580px){
             .card{max-width:100%;box-shadow:none;border-radius:0;}
@@ -169,7 +182,7 @@
 </head>
 <body>
 
-    <!-- Claude'un Lüks Giriş Paneli (Orijinal Ambleminiz Entegre Edildi) -->
+    <!-- Premium Giriş Paneli -->
     <div id="loader-container">
         <div class="bg-orb1"></div>
         <div class="bg-orb2"></div>
@@ -182,7 +195,7 @@
                 <img src="https://media-otp1-1.cdn.whatsapp.net/v/t61.24694-24/673885082_841651268995747_6120292015838119377_n.jpg?ccb=11-4&oh=01_Q5Aa4gEJzNACiZgqkgR0ImTGQlf2dm45e4SYuxTM-eMurATw_g&oe=6A284359&_nc_sid=5e03e0&_nc_cat=111" alt="Aykent Sitesi" class="center-logo">
             </div>
             <div class="site-name">AYKENT SİTESİ</div>
-            <div class="site-sub">Aidat Takip Paneli</div>
+            <div class="site-sub">Site Yönetimi</div>
             <div class="loader-dots">
                 <div class="loader-dot"></div>
                 <div class="loader-dot"></div>
@@ -220,6 +233,14 @@
                 <div class="payment-head">ÖDEME BİLGİLERİ</div>
                 <div id="odeme-govde"></div>
             </div>
+
+            <!-- Dinamik Akıllı WhatsApp Destek Alanı -->
+            <div id="whatsapp-alan" class="whatsapp-container">
+                <a id="whatsapp-link" href="#" target="_blank" class="whatsapp-btn">
+                    <svg style="width:22px;height:22px;fill:currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.243 8.432 3.498 2.256 2.255 3.497 5.25 3.496 8.435-.003 6.634-5.354 11.982-11.933 11.982-1.996-.001-3.957-.5-5.698-1.447L0 24zm6.59-4.859c1.72.101 2.382.204 4.417.205 5.516 0 10.029-4.505 10.032-10.016.001-2.64-1.024-5.122-2.887-6.986-1.862-1.864-4.343-2.89-6.984-2.891-5.522 0-10.033 4.508-10.035 10.021-.001 2.007.518 2.975 1.512 4.704l-.956 3.493 3.585-.94c1.643.914 2.32 1.314 4.316 1.314zM16.518 14c-.258-.127-1.526-.749-1.762-.834-.236-.086-.407-.127-.578.128-.171.256-.664.834-.813.1-.148-.127-.297-.181-.554-.308-2.172-.962-3.56-3.137-3.667-3.281-.107-.144-.016-.223.056-.305.105-.119.255-.308.337-.419.082-.11.11-.186.165-.313.055-.128.027-.236-.014-.321-.04-.086-.407-1.012-.557-1.383-.146-.358-.295-.308-.407-.314-.105-.005-.226-.006-.347-.006-.12 0-.317.045-.483.226-.166.181-.634.616-.634 1.501 0 .885.643 1.74 1.731 1.884 2.253 3.22 3.738 3.535 5.234 3.639 1.15.08 2.137-.019 2.946-.139.902-.134 1.873-.762 2.138-1.463.264-.7 0-1.298-.079-1.422-.079-.124-.29-.199-.549-.326z"/></svg>
+                    Yöneticiye WhatsApp'tan Yaz
+                </a>
+            </div>
             
             <div id="panel-footer" class="footer"></div>
         </div>
@@ -230,6 +251,27 @@
     <script>
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyYZv0MqrPYX2wCXQhiv83nZA8TfzhjN7QEP98LKQFGjUgnBjng96ngUxT_cLbH_W-L/exec";
 
+        function temizleKurus(deger) {
+            if (typeof deger === 'string') {
+                return deger.replace(/,00/g, '');
+            }
+            return deger;
+        }
+
+        function sadeceRakam(deger) {
+            if (typeof deger === 'string') {
+                return deger.replace(/,00/g, '').replace(/ TL/g, '').replace(/\./g, '').trim();
+            }
+            return deger;
+        }
+
+        function ibanTemizleKopya(deger) {
+            if (typeof deger === 'string') {
+                return deger.replace(/\s+/g, '').trim();
+            }
+            return deger;
+        }
+
         function getParam(name) {
             return new URLSearchParams(window.location.search).get(name);
         }
@@ -237,7 +279,7 @@
         window.onload = function() {
             var kod = getParam('k') || getParam('id');
             if(!kod) {
-                showError("Bağlantı geçersiz veya eksik kod içeriyor.");
+                showError("Geçersiz Bağlantı", "Kullanılan link hatalı veya eksik kod içeriyor. Lütfen site yönetimi ile görüşünüz.");
                 return;
             }
 
@@ -251,10 +293,11 @@
             if(loader) {
                 loader.style.opacity = '0';
                 loader.style.visibility = 'hidden';
+                setTimeout(function(){ loader.remove(); }, 500);
             }
             
             if(!data || data.hata) {
-                showError(data ? data.hata : "Sistem hatası.");
+                showError("Kayıt Bulunamadı", (data ? data.hata : "Sistem hatası.") + " Lütfen bilgilerinizi kontrol ediniz.");
                 return;
             }
 
@@ -264,25 +307,40 @@
                 d.style.display = 'block';
             }
 
-            document.getElementById('panel-baslik').textContent = data.blok + " · " + data.daire + " NO";
+            document.getElementById('panel-baslik').textContent = data.blok + " · DAİRE " + data.daire;
             document.getElementById('panel-isim').textContent = data.isim;
 
-            var row1 = '<div class="box green"><span class="small">'+data.etiketOdenen+'</span><span class="big">'+data.odenenYil+'</span></div>';
-            if(data.borcYilRaw > 0) {
-                row1 += '<div class="box red"><span class="small">'+data.etiketBorc+'</span><span class="big">'+data.borcYil+'</span></div>';
-            } else {
-                row1 += '<div class="box green"><span class="small">'+data.etiketBorc+'</span><span class="big">0,00 TL</span></div>';
-            }
-            document.getElementById('summary-row-1').innerHTML = row1;
+            var odenenTemiz = temizleKurus(data.odenenYil);
+            var borcTemiz = temizleKurus(data.borcYil);
+            var devirTemiz = temizleKurus(data.devir);
+            var toplamTemiz = temizleKurus(data.toplamBorc);
 
-            var row2 = '';
-            if(data.devirRaw > 0) {
-                row2 += '<div class="box yellow"><span class="small">'+data.etiketDevir+'</span><span class="big">'+data.devir+'</span></div>';
+            // 🔒 XSS Korumalı 1. Özet Satırı Yapılandırması
+            var row1 = document.getElementById('summary-row-1');
+            row1.innerHTML = '';
+            
+            row1.appendChild(createSummaryBox(data.etiketOdenen, odenenTemiz, 'green'));
+            if(data.borcYilRaw > 0) {
+                row1.appendChild(createSummaryBox(data.etiketBorc, borcTemiz, 'red'));
             } else {
-                row2 += '<div class="box gray"><span class="small">'+data.etiketDevir+'</span><span class="big">Borç yok</span></div>';
+                row1.appendChild(createSummaryBox(data.etiketBorc, '0 TL', 'green'));
             }
-            row2 += '<div class="box pink"><span class="small">TOPLAM BORÇ</span><span class="big">'+data.toplamBorc+'</span></div>';
-            document.getElementById('summary-row-2').innerHTML = row2;
+
+            // 🔒 XSS Korumalı 2. Özet Satırı Yapılandırması
+            var row2 = document.getElementById('summary-row-2');
+            row2.innerHTML = '';
+
+            if(data.devirRaw > 0) {
+                row2.appendChild(createSummaryBox(data.etiketDevir, devirTemiz, 'yellow'));
+            } else {
+                row2.appendChild(createSummaryBox(data.etiketDevir, 'Borç yok', 'gray'));
+            }
+
+            if(data.toplamBorcRaw <= 0) {
+                row2.appendChild(createSummaryBox('TOPLAM DURUM', 'BORÇ YOK 👍', 'green'));
+            } else {
+                row2.appendChild(createSummaryBox('TOPLAM BORÇ', toplamTemiz, 'pink'));
+            }
 
             if(data.notlar && data.notlar !== '0') {
                 var n = document.getElementById('panel-not');
@@ -290,45 +348,123 @@
                 n.style.display = 'block';
             }
 
-            var tGovde = "";
+            // Tablo Alanı
+            var tGovde = document.getElementById('tablo-govde');
+            tGovde.innerHTML = "";
             data.tablo.forEach(function(satir) {
-                tGovde += '<tr>' +
-                    '<td><strong>' + satir.ay + '</strong></td>' +
-                    '<td class="' + satir.aidatClass + '">' + satir.aidatText + '</td>' +
-                    '<td class="' + satir.ekClass + '">' + satir.ekText + '</td>' +
-                    '</tr>';
+                var tr = document.createElement('tr');
+                
+                var tdAy = document.createElement('td');
+                var strongAy = document.createElement('strong');
+                strongAy.textContent = satir.ay;
+                tdAy.appendChild(strongAy);
+                
+                var tdAidat = document.createElement('td');
+                tdAidat.className = satir.aidatClass;
+                tdAidat.textContent = temizleKurus(satir.aidatText);
+                
+                var tdEk = document.createElement('td');
+                tdEk.className = satir.ekClass;
+                tdEk.textContent = temizleKurus(satir.ekText);
+                
+                tr.appendChild(tdAy);
+                tr.appendChild(tdAidat);
+                tr.appendChild(tdEk);
+                tGovde.appendChild(tr);
             });
-            document.getElementById('tablo-govde').innerHTML = tGovde;
 
-            var pRows = paymentRowHtml('Alıcı', data.odemeAlici, data.odemeAlici) +
-                        paymentRowHtml('IBAN', data.odemeIban, data.odemeIban);
+            // Ödeme Bilgileri Alanı
+            var oGovde = document.getElementById('odeme-govde');
+            oGovde.innerHTML = "";
+            
+            oGovde.appendChild(paymentRowNode('Alıcı', data.odemeAlici, data.odemeAlici));
+            oGovde.appendChild(paymentRowNode('IBAN', data.odemeIban, ibanTemizleKopya(data.odemeIban)));
+            
             if(data.toplamBorcRaw > 0) {
-                pRows += paymentRowHtml('Tutar', data.toplamBorc, data.odemeTutar);
+                oGovde.appendChild(paymentRowNode('Tutar', toplamTemiz, sadeceRakam(data.toplamBorc)));
             }
-            pRows += paymentRowHtml('Açıklama', data.odemeAciklama, data.odemeAciklama);
-            document.getElementById('odeme-govde').innerHTML = pRows;
+            oGovde.appendChild(paymentRowNode('Açıklama', data.odemeAciklama, data.odemeAciklama));
+
+            // 💬 Google Sheets'ten Dinamik WhatsApp Numarası ve Akıllı Hazır Mesaj Entegrasyonu
+            if(data.whatsappNo && data.whatsappNo !== '0' && data.whatsappNo !== '') {
+                var waAlan = document.getElementById('whatsapp-alan');
+                var waLink = document.getElementById('whatsapp-link');
+                
+                // 🟢 Yeni isim/muhatap karmaşasını önleyen yalın ve net taslak:
+                var sakinMesaj = "Merhaba, ben " + data.blok + " · " + data.daire + " Nolu dairede oturuyorum. Panelden aidat ve borç durumumu inceledim, bir konuda bilgi almak istiyorum.";
+                
+                waLink.href = "https://wa.me/" + data.whatsappNo.replace(/[^0-9]/g, '') + "?text=" + encodeURIComponent(sakinMesaj);
+                waAlan.style.display = 'block';
+            }
 
             document.getElementById('panel-footer').textContent = "Son güncelleme: " + data.guncellemeTarihi;
             document.getElementById('card').style.display = 'block';
         }
 
-        function paymentRowHtml(label, val, copyVal) {
-            return '<div class="payment-row">' +
-                '<div class="payment-label">' + label + '</div>' +
-                '<div class="payment-value">' +
-                '<div class="payment-text">' + val + '</div>' +
-                '<button class="copy-btn" data-copy="' + copyVal + '" onclick="kopyaBtn(this)">Kopyala</button>' +
-                '</div></div>';
+        // 🔒 XSS Güvenli Özet Kutusu Üretici
+        function createSummaryBox(label, val, className) {
+            var box = document.createElement('div');
+            box.className = 'box ' + className;
+            
+            var sm = document.createElement('span');
+            sm.className = 'small';
+            sm.textContent = label;
+            
+            var bg = document.createElement('span');
+            bg.className = 'big';
+            bg.textContent = val;
+            
+            box.appendChild(sm);
+            box.appendChild(bg);
+            return box;
         }
 
-        function showError(msg) {
+        function paymentRowNode(label, val, copyVal) {
+            var row = document.createElement('div');
+            row.className = 'payment-row';
+            
+            var lblNode = document.createElement('div');
+            lblNode.className = 'payment-label';
+            lblNode.textContent = label;
+            
+            var valNode = document.createElement('div');
+            valNode.className = 'payment-value';
+            
+            var textNode = document.createElement('div');
+            textNode.className = 'payment-text';
+            textNode.textContent = val;
+            
+            var btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.textContent = 'Kopyala';
+            btn.setAttribute('data-copy', copyVal);
+            btn.onclick = function() { kopyaBtn(this); };
+            
+            valNode.appendChild(textNode);
+            valNode.appendChild(btn);
+            row.appendChild(lblNode);
+            row.appendChild(valNode);
+            return row;
+        }
+
+        // 🔒 XSS Güvenli Hata Basma Fonksiyonu
+        function showError(title, msg) {
             var loader = document.getElementById('loader-container');
             if(loader) {
                 loader.style.opacity = '0';
                 loader.style.visibility = 'hidden';
+                setTimeout(function(){ loader.remove(); }, 500);
             }
             var e = document.getElementById('error');
-            e.textContent = msg;
+            e.innerHTML = '';
+            
+            var strong = document.createElement('strong');
+            strong.textContent = '⚠️ ' + title;
+            
+            var text = document.createTextNode(' ' + msg);
+            
+            e.appendChild(strong);
+            e.appendChild(text);
             e.style.display = 'block';
         }
 
