@@ -10,68 +10,102 @@
         html{height:100%;overflow-y:scroll;overflow-x:hidden;-webkit-text-size-adjust:100%;}
         body{min-height:100%;overflow-x:hidden;background:#f3f6fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);font-weight:700;}
         
-        /* ── YENİ NESİL: MODERN BALIK GÖZÜ & PULSING DALGA EFEKTİ ── */
+        /* ── CLAUDE + GEMINI PREMIUM GLASSMORPHISM LOADER DESIGN ── */
         #loader-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #f3f6fb;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(145deg, #0f2747 0%, #1A2B48 50%, #07111f 100%);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
             z-index: 9999;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            overflow: hidden;
         }
-        
-        /* Arkadaki yumuşak, dışa doğru yayılan dalga efekti */
-        .spinner-outer {
-            width: 125px;
-            height: 125px;
-            border-radius: 50%;
-            background: rgba(26, 43, 72, 0.15);
-            position: absolute;
-            animation: balikGozuDalga 2s infinite ease-in-out;
+        .bg-orb1 {
+            position: absolute; width: 280px; height: 280px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(214,178,94,0.18) 0%, transparent 70%);
+            top: -60px; left: -60px;
+            animation: orbFloat1 6s ease-in-out infinite;
         }
-        
-        /* Ortadaki şık Aykent binalı amblemi (Büyüyüp küçülen mercek hareketi) */
+        .bg-orb2 {
+            position: absolute; width: 240px; height: 240px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(53,93,147,0.35) 0%, transparent 70%);
+            bottom: -50px; right: -50px;
+            animation: orbFloat2 7s ease-in-out infinite;
+        }
+        .glass-card {
+            position: relative; width: 280px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(214,178,94,0.3);
+            border-radius: 28px; padding: 35px 24px 30px;
+            display: flex; flex-direction: column; align-items: center;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .glass-top-shine {
+            position: absolute; top: 0; left: 16px; right: 16px; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            border-radius: 999px;
+        }
+        .logo-ring {
+            position: relative; width: 130px; height: 130px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px;
+        }
+        .ring-outer {
+            position: absolute; inset: -14px; border-radius: 50%;
+            border: 1.5px solid rgba(214,178,94,0.4);
+            animation: ringPulse 2.8s ease-in-out infinite;
+        }
+        .ring-inner {
+            position: absolute; inset: -6px; border-radius: 50%;
+            border: 1px solid rgba(214,178,94,0.2);
+            animation: ringPulse 2.8s ease-in-out infinite 0.4s;
+        }
+        .ring-spin {
+            position: absolute; inset: -10px; border-radius: 50%;
+            border: 1.5px solid transparent;
+            border-top-color: rgba(214,178,94,0.7);
+            border-right-color: rgba(214,178,94,0.25);
+            animation: spinRing 2s linear infinite;
+        }
         .center-logo {
-            width: 125px;
-            height: 125px;
-            border-radius: 50%;
-            object-fit: cover;
-            z-index: 10;
-            box-shadow: 0 8px 24px rgba(26, 43, 72, 0.15);
-            animation: balikGozuMercek 2s infinite ease-in-out;
+            width: 130px; height: 130px; border-radius: 50%; object-fit: cover;
+            border: 2px solid rgba(214,178,94,0.5);
+            box-shadow: 0 0 20px rgba(214,178,94,0.15);
+            animation: logoBreath 2.8s ease-in-out infinite;
         }
-        
+        .site-name {
+            font-size: 19px; font-weight: 950; color: #f4d47c;
+            letter-spacing: 0.8px; text-align: center; margin-bottom: 2px;
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+        }
+        .site-sub {
+            font-size: 12px; color: rgba(255,255,255,0.5);
+            text-align: center; letter-spacing: 0.5px; margin-bottom: 22px;
+            font-weight: 800;
+        }
+        .loader-dots {
+            display: flex; gap: 8px; align-items: center; justify-content: center;
+        }
+        .loader-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(214,178,94,0.6);
+            animation: dotBlink 1.4s ease-in-out infinite;
+        }
+        .loader-dot:nth-child(2){animation-delay:.2s}
+        .loader-dot:nth-child(3){animation-delay:.4s}
         .loader-text {
-            margin-top: 36px;
-            font-size: 16px;
-            color: var(--navy);
-            font-weight: 900;
-            letter-spacing: 0.5px;
-            animation: yaziNefesAl 2s infinite ease-in-out;
+            margin-top: 12px; font-size: 13px; color: rgba(255,255,255,0.5);
+            letter-spacing: 0.5px; text-align: center; font-weight: 800;
+            animation: labelFade 1.4s ease-in-out infinite;
         }
-        
-        /* ── EFEKTLERİN MATEMATİKSEL TANIMLARI (ANIMATIONS) ── */
-        @keyframes balikGozuMercek {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); } /* Yumuşakça öne fırlama / balık gözü hissi */
-        }
-        
-        @keyframes balikGozuDalga {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.35); opacity: 0.3; }
-            100% { transform: scale(1.6); opacity: 0; } /* Dışa doğru sönümlenen lüks dalga */
-        }
-
-        @keyframes yaziNefesAl {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
+        @keyframes orbFloat1{0%,100%{transform:translate(0,0)}50%{transform:translate(18px,14px)}}
+        @keyframes orbFloat2{0%,100%{transform:translate(0,0)}50%{transform:translate(-14px,-18px)}}
+        @keyframes ringPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+        @keyframes spinRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes logoBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+        @keyframes dotBlink{0%,100%{opacity:.3;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+        @keyframes labelFade{0%,100%{opacity:.4}50%{opacity:.8}}
         /* ───────────────────────────────────────────────────────────── */
 
         .duyuru{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(90deg,#8a6a22,#d6b25e,#8a6a22);color:#111827;text-align:center;padding:10px;font-size:15px;line-height:1.25;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.22);display:none;}
@@ -135,10 +169,27 @@
 </head>
 <body>
 
+    <!-- Claude'un Lüks Giriş Paneli (Orijinal Ambleminiz Entegre Edildi) -->
     <div id="loader-container">
-        <div class="spinner-outer"></div>
-        <img src="https://media-otp1-1.cdn.whatsapp.net/v/t61.24694-24/673885082_841651268995747_6120292015838119377_n.jpg?ccb=11-4&oh=01_Q5Aa4gEJzNACiZgqkgR0ImTGQlf2dm45e4SYuxTM-eMurATw_g&oe=6A284359&_nc_sid=5e03e0&_nc_cat=111" alt="Aykent Sitesi Logo" class="center-logo">
-        <div class="loader-text">Aykent Sitesi • Bilgileriniz Getiriliyor</div>
+        <div class="bg-orb1"></div>
+        <div class="bg-orb2"></div>
+        <div class="glass-card">
+            <div class="glass-top-shine"></div>
+            <div class="logo-ring">
+                <div class="ring-outer"></div>
+                <div class="ring-inner"></div>
+                <div class="ring-spin"></div>
+                <img src="https://media-otp1-1.cdn.whatsapp.net/v/t61.24694-24/673885082_841651268995747_6120292015838119377_n.jpg?ccb=11-4&oh=01_Q5Aa4gEJzNACiZgqkgR0ImTGQlf2dm45e4SYuxTM-eMurATw_g&oe=6A284359&_nc_sid=5e03e0&_nc_cat=111" alt="Aykent Sitesi" class="center-logo">
+            </div>
+            <div class="site-name">AYKENT SİTESI</div>
+            <div class="site-sub">Site Yönetimi</div>
+            <div class="loader-dots">
+                <div class="loader-dot"></div>
+                <div class="loader-dot"></div>
+                <div class="loader-dot"></div>
+            </div>
+            <div class="loader-text">Bilgileriniz getiriliyor...</div>
+        </div>
     </div>
 
     <div id="duyuru" class="duyuru"></div>
@@ -177,9 +228,7 @@
     <div id="toast" class="toast">Kopyalandı</div>
 
     <script>
-        // ── BURAYA YENİ ALDIĞINIZ WEB APP URL'SİNİ YAPIŞTIRIN ──────────
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyYZv0MqrPYX2wCXQhiv83nZA8TfzhjN7QEP98LKQFGjUgnBjng96ngUxT_cLbH_W-L/exec";
-        // ─────────────────────────────────────────────────────────────
 
         function getParam(name) {
             return new URLSearchParams(window.location.search).get(name);
@@ -198,7 +247,6 @@
         };
 
         function veriYukle(data) {
-            // Veri geldiği an yükleme ekranını yumuşakça kaldırır
             var loader = document.getElementById('loader-container');
             if(loader) {
                 loader.style.opacity = '0';
