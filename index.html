@@ -10,6 +10,70 @@
         html{height:100%;overflow-y:scroll;overflow-x:hidden;-webkit-text-size-adjust:100%;}
         body{min-height:100%;overflow-x:hidden;background:#f3f6fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);font-weight:700;}
         
+        /* ── YENİ NESİL: MODERN BALIK GÖZÜ & PULSING DALGA EFEKTİ ── */
+        #loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f3f6fb;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        
+        /* Arkadaki yumuşak, dışa doğru yayılan dalga efekti */
+        .spinner-outer {
+            width: 125px;
+            height: 125px;
+            border-radius: 50%;
+            background: rgba(26, 43, 72, 0.15);
+            position: absolute;
+            animation: balikGozuDalga 2s infinite ease-in-out;
+        }
+        
+        /* Ortadaki şık Aykent binalı amblemi (Büyüyüp küçülen mercek hareketi) */
+        .center-logo {
+            width: 125px;
+            height: 125px;
+            border-radius: 50%;
+            object-fit: cover;
+            z-index: 10;
+            box-shadow: 0 8px 24px rgba(26, 43, 72, 0.15);
+            animation: balikGozuMercek 2s infinite ease-in-out;
+        }
+        
+        .loader-text {
+            margin-top: 36px;
+            font-size: 16px;
+            color: var(--navy);
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            animation: yaziNefesAl 2s infinite ease-in-out;
+        }
+        
+        /* ── EFEKTLERİN MATEMATİKSEL TANIMLARI (ANIMATIONS) ── */
+        @keyframes balikGozuMercek {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); } /* Yumuşakça öne fırlama / balık gözü hissi */
+        }
+        
+        @keyframes balikGozuDalga {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.35); opacity: 0.3; }
+            100% { transform: scale(1.6); opacity: 0; } /* Dışa doğru sönümlenen lüks dalga */
+        }
+
+        @keyframes yaziNefesAl {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        /* ───────────────────────────────────────────────────────────── */
+
         .duyuru{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(90deg,#8a6a22,#d6b25e,#8a6a22);color:#111827;text-align:center;padding:10px;font-size:15px;line-height:1.25;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.22);display:none;}
         .wrap{display:flex;justify-content:center;min-height:100vh;padding-top:41px;}
         .card{width:100%;max-width:560px;background:white;padding-bottom:32px;box-shadow:0 16px 48px rgba(0,0,0,.16);border-radius:0 0 20px 20px; display: none;}
@@ -57,7 +121,6 @@
         .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1A2B48;color:#f4d47c;padding:12px 24px;border-radius:999px;font-size:16px;opacity:0;transition:opacity .2s ease;z-index:9999;font-weight:950;box-shadow:0 4px 16px rgba(0,0,0,.25);}
         .toast.show{opacity:1;}
         
-        .loading{text-align:center;padding:50px;font-size:18px;color:var(--navy);}
         .error-card{background:#fff1f2;color:#be123c;padding:20px;border-radius:12px;margin:20px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.1);display:none;}
 
         @media(max-width:580px){
@@ -72,8 +135,13 @@
 </head>
 <body>
 
+    <div id="loader-container">
+        <div class="spinner-outer"></div>
+        <img src="https://media-otp1-1.cdn.whatsapp.net/v/t61.24694-24/673885082_841651268995747_6120292015838119377_n.jpg?ccb=11-4&oh=01_Q5Aa4gEJzNACiZgqkgR0ImTGQlf2dm45e4SYuxTM-eMurATw_g&oe=6A284359&_nc_sid=5e03e0&_nc_cat=111" alt="Aykent Sitesi Logo" class="center-logo">
+        <div class="loader-text">Aykent Sitesi • Bilgileriniz Getiriliyor</div>
+    </div>
+
     <div id="duyuru" class="duyuru"></div>
-    <div id="loading" class="loading">⏳ Bilgileriniz doğrulanıyor, lütfen bekleyin...</div>
     <div id="error" class="error-card"></div>
 
     <div id="wrap" class="wrap">
@@ -130,7 +198,12 @@
         };
 
         function veriYukle(data) {
-            document.getElementById('loading').style.display = 'none';
+            // Veri geldiği an yükleme ekranını yumuşakça kaldırır
+            var loader = document.getElementById('loader-container');
+            if(loader) {
+                loader.style.opacity = '0';
+                loader.style.visibility = 'hidden';
+            }
             
             if(!data || data.hata) {
                 showError(data ? data.hata : "Sistem hatası.");
@@ -201,7 +274,11 @@
         }
 
         function showError(msg) {
-            document.getElementById('loading').style.display = 'none';
+            var loader = document.getElementById('loader-container');
+            if(loader) {
+                loader.style.opacity = '0';
+                loader.style.visibility = 'hidden';
+            }
             var e = document.getElementById('error');
             e.textContent = msg;
             e.style.display = 'block';
