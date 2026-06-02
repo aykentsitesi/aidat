@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Aykent Site Yönetimi - Hızlı Aidat Paneli</title>
+    <style>
+        :root{--navy:#1A2B48;--gold:#d6b25e;--ink:#101827;--line:#e6e9ef;--green:#047857;--red:#be123c;--amber:#92400e;--mint:#E8F5E9;--active-green:#27AE60;--cool-gray:#F8F9FA;}
+        *{box-sizing:border-box;margin:0;padding:0;}
+        html{height:100%;overflow-y:scroll;overflow-x:hidden;-webkit-text-size-adjust:100%;}
+        body{min-height:100%;overflow-x:hidden;background:#f3f6fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);font-weight:700;}
+        
+        .duyuru{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(90deg,#8a6a22,#d6b25e,#8a6a22);color:#111827;text-align:center;padding:10px;font-size:15px;line-height:1.25;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.22);display:none;}
+        .wrap{display:flex;justify-content:center;min-height:100vh;padding-top:41px;}
+        .card{width:100%;max-width:560px;background:white;padding-bottom:32px;box-shadow:0 16px 48px rgba(0,0,0,.16);border-radius:0 0 20px 20px; display: none;}
+        
+        .hero{background:radial-gradient(circle at top left,#355d93 0,#0f2747 42%,#07111f 100%);color:white;text-align:center;padding:26px 20px 22px;border-bottom:4px solid var(--gold);}
+        .blok{font-size:31px;line-height:1.1;font-weight:950;letter-spacing:.2px;}
+        .isim{margin-top:8px;color:#f4d47c;font-size:22px;line-height:1.2;font-weight:850;word-break:break-word;}
+        
+        .summary-sticky{padding:10px 12px 6px;}
+        .summary{display:flex;gap:8px;}
+        .box{flex:1;min-width:0;border-radius:16px;padding:14px 8px;text-align:center;white-space:pre-line;word-break:break-word;line-height:1.15;box-shadow:0 4px 6px rgba(0,0,0,.08);border:1px solid rgba(214,178,94,.18);transition:transform .2s;}
+        .box:hover{transform:translateY(-2px);}
+        .box .small{font-size:13px;display:block;margin-bottom:5px;font-weight:950;letter-spacing:.2px;}
+        .box .big{font-size:21px;display:block;font-weight:950;}
+        
+        .green{background:linear-gradient(180deg,#ecfdf5,var(--mint));color:var(--green);}
+        .red{background:linear-gradient(180deg,#fff1f2,#ffe4e6);color:var(--red);}
+        .gray{background:linear-gradient(180deg,var(--cool-gray),#e5e7eb);color:#475467;}
+        .yellow{background:linear-gradient(180deg,#fff7ed,#fef3c7);color:var(--amber);}
+        .pink{background:linear-gradient(180deg,#fff0f0,#ffd6d6);color:#c0152a;}
+        
+        .table-wrap{padding:14px 14px 0;overflow-x:hidden;}
+        table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(15,23,42,.10);border:1px solid #e5e7eb;}
+        th{background:var(--navy);color:#f4d47c;padding:13px 4px;font-size:17px;font-weight:950;}
+        td{padding:11px 4px;text-align:center;border-bottom:1px solid var(--line);word-break:break-word;font-size:17px;font-weight:900;background:white;}
+        td:first-child{text-align:left;padding-left:14px;color:#111827;background:var(--cool-gray);}
+        
+        .paid{background:var(--mint)!important;color:#047857;}
+        .muted{background:#f1f5f9!important;color:#64748b;}
+        
+        .note{margin:14px 14px 0;background:#fff7ed;color:#9a3412;border-left:6px solid var(--gold);border-radius:14px;padding:14px;white-space:pre-line;line-height:1.3;font-size:16px;font-weight:850;box-shadow:0 2px 8px rgba(0,0,0,.06); display: none;}
+        
+        .payment{margin:16px 14px 8px;border-radius:18px;overflow:hidden;border:1px solid rgba(214,178,94,.36);background:white;box-shadow:0 6px 20px rgba(15,23,42,.10);}
+        .payment-head{background:linear-gradient(90deg,#07111f,var(--navy));color:#f4d47c;padding:16px;text-align:center;font-weight:950;font-size:20px;letter-spacing:.3px;}
+        .payment-row{display:flex;width:100%;border-top:1px solid #e5e7eb;min-height:58px;}
+        .payment-label{width:100px;flex:0 0 100px;background:#fffaf0;color:#8a6a22;font-weight:950;padding:12px 10px;font-size:14px;display:flex;align-items:center;}
+        .payment-value{flex:1;min-width:0;padding:12px 10px;font-size:15px;word-break:break-word;line-height:1.22;display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:850;}
+        .payment-text{flex:1;min-width:0;word-break:break-word;color:#111827;}
+        
+        .copy-btn{min-height:42px;min-width:76px;background:linear-gradient(135deg,#1e8449,var(--active-green));color:#ffffff;border:none;padding:8px 14px;font-size:13px;border-radius:8px;cursor:pointer;white-space:nowrap;flex:0 0 auto;font-weight:950;transition:background .3s,transform .15s,box-shadow .3s;box-shadow:0 2px 8px rgba(39,174,96,.3);}
+        .copy-btn:hover{background:linear-gradient(135deg,#145a32,#1e8449);box-shadow:0 4px 14px rgba(39,174,96,.45);}
+        .copy-btn:active{transform:scale(.94);}
+        
+        .footer{text-align:center;color:#667085;font-size:13px;padding:18px 10px 28px;font-weight:800;}
+        .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1A2B48;color:#f4d47c;padding:12px 24px;border-radius:999px;font-size:16px;opacity:0;transition:opacity .2s ease;z-index:9999;font-weight:950;box-shadow:0 4px 16px rgba(0,0,0,.25);}
+        .toast.show{opacity:1;}
+        
+        .loading{text-align:center;padding:50px;font-size:18px;color:var(--navy);}
+        .error-card{background:#fff1f2;color:#be123c;padding:20px;border-radius:12px;margin:20px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.1);display:none;}
+
+        @media(max-width:580px){
+            .card{max-width:100%;box-shadow:none;border-radius:0;}
+            .summary{gap:5px;}
+            .summary-sticky{padding:8px 8px 4px;top:39px;}
+            .table-wrap{padding:10px 8px 0;}
+            .payment{margin:12px 8px 8px;}
+            .note{margin:10px 8px 0;}
+        }
+    </style>
+</head>
+<body>
+
+    <div id="duyuru" class="duyuru"></div>
+    <div id="loading" class="loading">⏳ Bilgileriniz doğrulanıyor, lütfen bekleyin...</div>
+    <div id="error" class="error-card"></div>
+
+    <div id="wrap" class="wrap">
+        <div id="card" class="card">
+            <div class="hero">
+                <div id="panel-baslik" class="blok">-</div>
+                <div id="panel-isim" class="isim">-</div>
+            </div>
+            
+            <div class="summary-sticky">
+                <div class="summary" id="summary-row-1"></div>
+                <div class="summary" id="summary-row-2" style="margin-top:6px;"></div>
+            </div>
+            
+            <div id="panel-not" class="note"></div>
+            
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>AY</th><th>AİDAT</th><th>EK</th></tr></thead>
+                    <tbody id="tablo-govde"></tbody>
+                </table>
+            </div>
+            
+            <div class="payment">
+                <div class="payment-head">ÖDEME BİLGİLERİ</div>
+                <div id="odeme-govde"></div>
+            </div>
+            
+            <div id="panel-footer" class="footer"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Kopyalandı</div>
+
+    <script>
+        // ── BURAYA YENİ ALDIĞINIZ WEB APP URL'SİNİ YAPIŞTIRIN ──────────
+        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyYZv0MqrPYX2wCXQhiv83nZA8TfzhjN7QEP98LKQFGjUgnBjng96ngUxT_cLbH_W-L/exec";
+        // ─────────────────────────────────────────────────────────────
+
+        function getParam(name) {
+            return new URLSearchParams(window.location.search).get(name);
+        }
+
+        window.onload = function() {
+            var kod = getParam('k') || getParam('id');
+            if(!kod) {
+                showError("Bağlantı geçersiz veya eksik kod içeriyor.");
+                return;
+            }
+
+            var script = document.createElement('script');
+            script.src = GOOGLE_API_URL + '?k=' + encodeURIComponent(kod) + '&callback=veriYukle';
+            document.body.appendChild(script);
+        };
+
+        function veriYukle(data) {
+            document.getElementById('loading').style.display = 'none';
+            
+            if(!data || data.hata) {
+                showError(data ? data.hata : "Sistem hatası.");
+                return;
+            }
+
+            if(data.duyuru) {
+                var d = document.getElementById('duyuru');
+                d.textContent = data.duyuru;
+                d.style.display = 'block';
+            }
+
+            document.getElementById('panel-baslik').textContent = data.blok + " · " + data.daire + " NO";
+            document.getElementById('panel-isim').textContent = data.isim;
+
+            var row1 = '<div class="box green"><span class="small">'+data.etiketOdenen+'</span><span class="big">'+data.odenenYil+'</span></div>';
+            if(data.borcYilRaw > 0) {
+                row1 += '<div class="box red"><span class="small">'+data.etiketBorc+'</span><span class="big">'+data.borcYil+'</span></div>';
+            } else {
+                row1 += '<div class="box green"><span class="small">'+data.etiketBorc+'</span><span class="big">0,00 TL</span></div>';
+            }
+            document.getElementById('summary-row-1').innerHTML = row1;
+
+            var row2 = '';
+            if(data.devirRaw > 0) {
+                row2 += '<div class="box yellow"><span class="small">'+data.etiketDevir+'</span><span class="big">'+data.devir+'</span></div>';
+            } else {
+                row2 += '<div class="box gray"><span class="small">'+data.etiketDevir+'</span><span class="big">Borç yok</span></div>';
+            }
+            row2 += '<div class="box pink"><span class="small">TOPLAM BORÇ</span><span class="big">'+data.toplamBorc+'</span></div>';
+            document.getElementById('summary-row-2').innerHTML = row2;
+
+            if(data.notlar && data.notlar !== '0') {
+                var n = document.getElementById('panel-not');
+                n.textContent = data.notlar;
+                n.style.display = 'block';
+            }
+
+            var tGovde = "";
+            data.tablo.forEach(function(satir) {
+                tGovde += '<tr>' +
+                    '<td><strong>' + satir.ay + '</strong></td>' +
+                    '<td class="' + satir.aidatClass + '">' + satir.aidatText + '</td>' +
+                    '<td class="' + satir.ekClass + '">' + satir.ekText + '</td>' +
+                    '</tr>';
+            });
+            document.getElementById('tablo-govde').innerHTML = tGovde;
+
+            var pRows = paymentRowHtml('Alıcı', data.odemeAlici, data.odemeAlici) +
+                        paymentRowHtml('IBAN', data.odemeIban, data.odemeIban);
+            if(data.toplamBorcRaw > 0) {
+                pRows += paymentRowHtml('Tutar', data.toplamBorc, data.odemeTutar);
+            }
+            pRows += paymentRowHtml('Açıklama', data.odemeAciklama, data.odemeAciklama);
+            document.getElementById('odeme-govde').innerHTML = pRows;
+
+            document.getElementById('panel-footer').textContent = "Son güncelleme: " + data.guncellemeTarihi;
+            document.getElementById('card').style.display = 'block';
+        }
+
+        function paymentRowHtml(label, val, copyVal) {
+            return '<div class="payment-row">' +
+                '<div class="payment-label">' + label + '</div>' +
+                '<div class="payment-value">' +
+                '<div class="payment-text">' + val + '</div>' +
+                '<button class="copy-btn" data-copy="' + copyVal + '" onclick="kopyaBtn(this)">Kopyala</button>' +
+                '</div></div>';
+        }
+
+        function showError(msg) {
+            document.getElementById('loading').style.display = 'none';
+            var e = document.getElementById('error');
+            e.textContent = msg;
+            e.style.display = 'block';
+        }
+
+        function kopyaBtn(btn){kopya(btn.getAttribute("data-copy")||"");}
+        function kopya(m){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(m).then(function(){toast("Kopyalandı");}).catch(function(){fallback(m);});}else{fallback(m);}}
+        function fallback(m){var e=document.createElement("textarea");e.value=m;e.style.position="fixed";e.style.opacity="0";document.body.appendChild(e);e.focus();e.select();try{document.execCommand("copy");toast("Kopyalandı");}catch(x){toast("Manuel kopyalayın");}document.body.removeChild(e);}
+        function toast(m){var t=document.getElementById("toast");t.textContent=m||"Kopyalandı";t.classList.add("show");setTimeout(function(){t.classList.remove("show");},1400);}
+    </script>
+</body>
+</html>
