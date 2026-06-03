@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="preconnect" href="https://raw.githubusercontent.com">
     <title>Aykent Site Yönetimi - Hızlı Aidat Paneli</title>
     <style>
         :root{--navy:#1A2B48;--gold:#d6b25e;--ink:#101827;--line:#e6e9ef;--green:#047857;--red:#be123c;--amber:#92400e;--mint:#E8F5E9;--active-green:#27AE60;--cool-gray:#F8F9FA;}
@@ -253,6 +255,8 @@
         const API_TIMEOUT_MS = 15000;
         var apiTimeoutHandle = null;
         var apiCevapGeldi = false;
+        var panelKod = '';
+        var ziyaretLogGonderildi = false;
 
         function temizleKurus(deger) {
             if (typeof deger === 'string') {
@@ -279,8 +283,9 @@
             return new URLSearchParams(window.location.search).get(name);
         }
 
-        window.onload = function() {
+        function paneliBaslat() {
             var kod = getParam('k') || getParam('id');
+            panelKod = kod || '';
             if(!kod) {
                 showError("Geçersiz Bağlantı", "Kullanılan link hatalı veya eksik kod içeriyor. Lütfen site yönetimi ile görüşünüz.");
                 return;
@@ -302,7 +307,13 @@
                 showError("Bağlantı Hatası", "Aidat sistemiyle bağlantı kurulamadı. Lütfen daha sonra tekrar deneyiniz veya site yönetimi ile görüşünüz.");
             };
             document.body.appendChild(script);
-        };
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', paneliBaslat);
+        } else {
+            paneliBaslat();
+        }
 
         function veriYukle(data) {
             apiCevapGeldi = true;
@@ -425,6 +436,31 @@
 
             document.getElementById('panel-footer').textContent = "Son güncelleme: " + data.guncellemeTarihi;
             document.getElementById('card').style.display = 'block';
+
+            // Panel kullanıcıya gösterildikten sonra ziyaret logunu arka planda yaz.
+            setTimeout(logZiyaretiArkaPlandaGonder, 80);
+        }
+
+        function logZiyaretiArkaPlandaGonder() {
+            if(ziyaretLogGonderildi || !panelKod) return;
+            ziyaretLogGonderildi = true;
+
+            var script = document.createElement('script');
+            script.src = GOOGLE_API_URL + '?mode=log&k=' + encodeURIComponent(panelKod) + '&callback=logYazildi&_t=' + Date.now();
+            script.async = true;
+            script.onerror = function() {
+                // Log hatası kullanıcı ekranını etkilemez.
+                try { script.remove(); } catch(e) {}
+            };
+            document.body.appendChild(script);
+
+            setTimeout(function() {
+                try { script.remove(); } catch(e) {}
+            }, 15000);
+        }
+
+        function logYazildi(data) {
+            // Bilerek boş: log sonucu kullanıcıya gösterilmez, panel hızını etkilemez.
         }
 
         // 🔒 API'den beklenmeyen/eksik veri gelirse panelin kırılmasını önleyen güvenli veri katmanı
