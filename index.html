@@ -192,7 +192,7 @@
                 <div class="ring-outer"></div>
                 <div class="ring-inner"></div>
                 <div class="ring-spin"></div>
-                <img src="https://raw.githubusercontent.com/aykentsitesi/aykent-assets/main/aykent%20logo.jpg" alt="Aykent Sitesi" class="center-logo">
+                <img src="https://raw.githubusercontent.com/aykentsitesi/aykent-assets/main/aykent%20logo.jpg" alt="Aykent Sitesi" class="center-logo" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'">
             </div>
             <div class="site-name">AYKENT SİTESİ</div>
             <div class="site-sub">Aidat Paneli</div>
@@ -252,6 +252,7 @@
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyYZv0MqrPYX2wCXQhiv83nZA8TfzhjN7QEP98LKQFGjUgnBjng96ngUxT_cLbH_W-L/exec";
         const API_TIMEOUT_MS = 15000;
         var apiTimeoutHandle = null;
+        var apiCevapGeldi = false;
 
         function temizleKurus(deger) {
             if (typeof deger === 'string') {
@@ -286,12 +287,14 @@
             }
 
             apiTimeoutHandle = setTimeout(function() {
+                if(apiCevapGeldi) return;
                 showError("Bağlantı Zaman Aşımı", "Sistem şu anda yanıt vermedi. Lütfen internet bağlantınızı kontrol edip sayfayı yenileyiniz veya site yönetimi ile görüşünüz.");
             }, API_TIMEOUT_MS);
 
             var script = document.createElement('script');
-            script.src = GOOGLE_API_URL + '?k=' + encodeURIComponent(kod) + '&callback=veriYukle';
+            script.src = GOOGLE_API_URL + '?k=' + encodeURIComponent(kod) + '&callback=veriYukle&_t=' + Date.now();
             script.onerror = function() {
+                if(apiCevapGeldi) return;
                 if(apiTimeoutHandle) {
                     clearTimeout(apiTimeoutHandle);
                     apiTimeoutHandle = null;
@@ -302,10 +305,12 @@
         };
 
         function veriYukle(data) {
+            apiCevapGeldi = true;
             if(apiTimeoutHandle) {
                 clearTimeout(apiTimeoutHandle);
                 apiTimeoutHandle = null;
             }
+            hataKapat_();
 
             var loader = document.getElementById('loader-container');
             if(loader) {
@@ -357,7 +362,7 @@
             }
 
             if(data.toplamBorcRaw <= 0) {
-                row2.appendChild(createSummaryBox('TOPLAM BORÇ', 'BORÇ YOK 👍', 'green'));
+                row2.appendChild(createSummaryBox('TOPLAM DURUM', 'BORÇ YOK 👍', 'green'));
             } else {
                 row2.appendChild(createSummaryBox('TOPLAM BORÇ', toplamTemiz, 'pink'));
             }
@@ -406,14 +411,15 @@
             oGovde.appendChild(paymentRowNode('Açıklama', data.odemeAciklama, data.odemeAciklama));
 
             // 💬 Google Sheets'ten Dinamik WhatsApp Numarası ve Akıllı Hazır Mesaj Entegrasyonu
-            if(data.whatsappNo && data.whatsappNo !== '0' && data.whatsappNo !== '') {
+            var waDigits = data.whatsappNo.replace(/[^0-9]/g, '');
+            if(waDigits && waDigits !== '0' && waDigits.length >= 8) {
                 var waAlan = document.getElementById('whatsapp-alan');
                 var waLink = document.getElementById('whatsapp-link');
                 
                 // 🟢 Yeni isim/muhatap karmaşasını önleyen yalın ve net taslak:
                 var sakinMesaj = "Merhaba, ben " + data.blok + " · " + data.daire + " Nolu dairede oturuyorum. Panelden aidat ve borç durumumu inceledim, bir konuda bilgi almak istiyorum.";
                 
-                waLink.href = "https://wa.me/" + data.whatsappNo.replace(/[^0-9]/g, '') + "?text=" + encodeURIComponent(sakinMesaj);
+                waLink.href = "https://wa.me/" + waDigits + "?text=" + encodeURIComponent(sakinMesaj);
                 waAlan.style.display = 'block';
             }
 
@@ -430,6 +436,11 @@
         function guvenliSayi(deger) {
             var n = Number(deger);
             return isFinite(n) ? n : 0;
+        }
+
+        function guvenliClass(deger) {
+            var v = guvenliMetin(deger, '').trim();
+            return (v === 'paid' || v === 'muted') ? v : '';
         }
 
         function guvenliPanelVerisi(data) {
@@ -461,9 +472,9 @@
                 return {
                     ay: guvenliMetin(satir.ay, '-'),
                     aidatText: guvenliMetin(satir.aidatText, '-'),
-                    aidatClass: guvenliMetin(satir.aidatClass, ''),
+                    aidatClass: guvenliClass(satir.aidatClass),
                     ekText: guvenliMetin(satir.ekText, '-'),
-                    ekClass: guvenliMetin(satir.ekClass, '')
+                    ekClass: guvenliClass(satir.ekClass)
                 };
             });
             return data;
@@ -515,6 +526,14 @@
             return row;
         }
 
+        function hataKapat_() {
+            var e = document.getElementById('error');
+            if(e) {
+                e.innerHTML = '';
+                e.style.display = 'none';
+            }
+        }
+
         // 🔒 XSS Güvenli Hata Basma Fonksiyonu
         function showError(title, msg) {
             var loader = document.getElementById('loader-container');
@@ -523,6 +542,9 @@
                 loader.style.visibility = 'hidden';
                 setTimeout(function(){ loader.remove(); }, 500);
             }
+            var card = document.getElementById('card');
+            if(card) card.style.display = 'none';
+
             var e = document.getElementById('error');
             e.innerHTML = '';
             
