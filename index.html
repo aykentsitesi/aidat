@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- AYKENT AIDAT PANELİ — v3.8.5 Üretim Final: küçük Tasarım: Fatih Oruç imzası eklendi -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -164,7 +165,9 @@
         .whatsapp-btn:hover { background: #20ba5a; transform: translateY(-1px); }
         .whatsapp-btn:active { transform: translateY(1px); }
 
-        .footer{text-align:center;color:#667085;font-size:13px;padding:18px 10px 10px;font-weight:800;}
+        .footer{text-align:center;color:#667085;font-size:12px;padding:16px 10px 10px;font-weight:800;line-height:1.35;}
+        .footer-sign{margin-top:3px;font-size:10.5px;color:#98a2b3;font-weight:750;letter-spacing:.1px;}
+        .footer-sign span{color:#9b7a2b;font-weight:850;}
         .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1A2B48;color:#f4d47c;padding:12px 24px;border-radius:999px;font-size:16px;opacity:0;transition:opacity .2s ease;z-index:9999;font-weight:950;box-shadow:0 4px 16px rgba(0,0,0,.25);}
         .toast.show{opacity:1;}
         
@@ -244,15 +247,22 @@
                 </a>
             </div>
             
-            <div id="panel-footer" class="footer"></div>
+            <div id="panel-footer" class="footer">
+                <div id="panel-guncelleme"></div>
+                <div class="footer-sign">© 2026 Aykent Site Yönetimi · <span>Tasarım: Fatih Oruç </span></div>
+            </div>
         </div>
     </div>
 
     <div id="toast" class="toast">Kopyalandı</div>
 
     <script>
+        // ⚙️ SADECE GEREKİRSE BU SATIRI DEĞİŞTİR:
+        // Apps Script Web App dağıtımındaki /exec URL adresi. GitHub WEB_APP_URL ile karıştırma.
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyYZv0MqrPYX2wCXQhiv83nZA8TfzhjN7QEP98LKQFGjUgnBjng96ngUxT_cLbH_W-L/exec";
-        const API_TIMEOUT_MS = 15000;
+
+        // Cevap gelmezse hata gösterme süresi. Başarılı açılışı yavaşlatmaz.
+        const API_TIMEOUT_MS = 12000;
         var apiTimeoutHandle = null;
         var apiCevapGeldi = false;
         var panelKod = '';
@@ -265,6 +275,7 @@
             return deger;
         }
 
+        // Sadece Tutar alanını kopyalarken kullanılır. IBAN için ibanTemizleKopya() kullanılır.
         function sadeceRakam(deger) {
             if (typeof deger === 'string') {
                 return deger.replace(/,00/g, '').replace(/ TL/g, '').replace(/\./g, '').trim();
@@ -434,7 +445,7 @@
                 waAlan.style.display = 'block';
             }
 
-            document.getElementById('panel-footer').textContent = "Son güncelleme: " + data.guncellemeTarihi;
+            document.getElementById('panel-guncelleme').textContent = "Son güncelleme: " + data.guncellemeTarihi;
             document.getElementById('card').style.display = 'block';
 
             // Panel kullanıcıya gösterildikten sonra ziyaret logunu arka planda yaz.
