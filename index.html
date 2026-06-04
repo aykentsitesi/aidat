@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AYKENT AIDAT PANELİ — v3.8.5 Üretim Final: küçük Tasarım: Fatih Oruç imzası eklendi -->
+<!-- AYKENT AIDAT PANELİ — v3.8.8 Dengeli Hız Final: localStorage hızlı gösterim + hafif sunucu ısıtma uyumu -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -249,7 +249,7 @@
             
             <div id="panel-footer" class="footer">
                 <div id="panel-guncelleme"></div>
-                <div class="footer-sign">© 2026 Aykent Site Yönetimi · <span>Tasarım: Fatih Oruç </span></div>
+                <div class="footer-sign">© 2026 Aykent Site Yönetimi · <span>Tasarım: Fatih Oruç</span></div>
             </div>
         </div>
     </div>
@@ -261,12 +261,17 @@
         // Apps Script Web App dağıtımındaki /exec URL adresi. GitHub WEB_APP_URL ile karıştırma.
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyYZv0MqrPYX2wCXQhiv83nZA8TfzhjN7QEP98LKQFGjUgnBjng96ngUxT_cLbH_W-L/exec";
 
-        // Cevap gelmezse hata gösterme süresi. Başarılı açılışı yavaşlatmaz.
-        const API_TIMEOUT_MS = 12000;
+        // Dengeli hız modu: varsa son panel verisini hemen gösterir, güncel veriyi arkadan yeniler.
+        // Local cache en fazla 5 dakika kullanılır; gerçek güncel veri arkadan kontrol edilir.
+        const API_SOFT_TIMEOUT_MS = 6000;
+        const API_HARD_TIMEOUT_MS = 15000;
+        const LOCAL_PANEL_CACHE_MS = 5 * 60 * 1000;
+        var apiSoftTimeoutHandle = null;
         var apiTimeoutHandle = null;
         var apiCevapGeldi = false;
         var panelKod = '';
         var ziyaretLogGonderildi = false;
+        var panelCacheGosterildi = false;
 
         function temizleKurus(deger) {
             if (typeof deger === 'string') {
@@ -294,6 +299,50 @@
             return new URLSearchParams(window.location.search).get(name);
         }
 
+        function lokalCacheKey_(kod) {
+            return 'aykent_aidat_panel_v1_' + String(kod || '');
+        }
+
+        function lokalPanelCacheOku_(kod) {
+            try {
+                if(!window.localStorage || !kod) return null;
+                var raw = localStorage.getItem(lokalCacheKey_(kod));
+                if(!raw) return null;
+                var paket = JSON.parse(raw);
+                if(!paket || !paket.zaman || !paket.data) return null;
+                if(Date.now() - Number(paket.zaman) > LOCAL_PANEL_CACHE_MS) return null;
+                return paket.data;
+            } catch(e) {
+                return null;
+            }
+        }
+
+        function lokalPanelCacheYaz_(kod, data) {
+            try {
+                if(!window.localStorage || !kod || !data || data.hata) return;
+                localStorage.setItem(lokalCacheKey_(kod), JSON.stringify({
+                    zaman: Date.now(),
+                    data: data
+                }));
+            } catch(e) {}
+        }
+
+        function apiZamanlayicilariTemizle_() {
+            if(apiSoftTimeoutHandle) {
+                clearTimeout(apiSoftTimeoutHandle);
+                apiSoftTimeoutHandle = null;
+            }
+            if(apiTimeoutHandle) {
+                clearTimeout(apiTimeoutHandle);
+                apiTimeoutHandle = null;
+            }
+        }
+
+        function beklemeYazisiGuncelle_(metin) {
+            var el = document.querySelector('.loader-text');
+            if(el) el.textContent = metin || 'Bilgileriniz getiriliyor...';
+        }
+
         function paneliBaslat() {
             var kod = getParam('k') || getParam('id');
             panelKod = kod || '';
@@ -302,18 +351,34 @@
                 return;
             }
 
+            var cached = lokalPanelCacheOku_(kod);
+            if(cached) {
+                panelCacheGosterildi = true;
+                veriYukle(cached, true);
+            }
+
+            apiSoftTimeoutHandle = setTimeout(function() {
+                if(apiCevapGeldi || panelCacheGosterildi) return;
+                beklemeYazisiGuncelle_("Sistem biraz yoğun, bilgileriniz getirilmeye devam ediyor...");
+            }, API_SOFT_TIMEOUT_MS);
+
             apiTimeoutHandle = setTimeout(function() {
                 if(apiCevapGeldi) return;
+                if(panelCacheGosterildi) {
+                    // Son kayıt ekranda durur; güncel istek yetişmediyse kullanıcıya kırmızı hata basma.
+                    return;
+                }
                 showError("Bağlantı Zaman Aşımı", "Sistem şu anda yanıt vermedi. Lütfen internet bağlantınızı kontrol edip sayfayı yenileyiniz veya site yönetimi ile görüşünüz.");
-            }, API_TIMEOUT_MS);
+            }, API_HARD_TIMEOUT_MS);
 
             var script = document.createElement('script');
             script.src = GOOGLE_API_URL + '?k=' + encodeURIComponent(kod) + '&callback=veriYukle&_t=' + Date.now();
             script.onerror = function() {
                 if(apiCevapGeldi) return;
-                if(apiTimeoutHandle) {
-                    clearTimeout(apiTimeoutHandle);
-                    apiTimeoutHandle = null;
+                apiZamanlayicilariTemizle_();
+                if(panelCacheGosterildi) {
+                    toast("Güncel bağlantı alınamadı; son kayıt gösteriliyor");
+                    return;
                 }
                 showError("Bağlantı Hatası", "Aidat sistemiyle bağlantı kurulamadı. Lütfen daha sonra tekrar deneyiniz veya site yönetimi ile görüşünüz.");
             };
@@ -326,11 +391,11 @@
             paneliBaslat();
         }
 
-        function veriYukle(data) {
-            apiCevapGeldi = true;
-            if(apiTimeoutHandle) {
-                clearTimeout(apiTimeoutHandle);
-                apiTimeoutHandle = null;
+        function veriYukle(data, cacheRender) {
+            cacheRender = cacheRender === true;
+            if(!cacheRender) {
+                apiCevapGeldi = true;
+                apiZamanlayicilariTemizle_();
             }
             hataKapat_();
 
@@ -342,11 +407,13 @@
             }
             
             if(!data || data.hata) {
+                // Sunucu bilinçli hata döndürdüyse eski cache ile saklama; hatayı göster.
                 showError("Kayıt Bulunamadı", (data ? guvenliMetin(data.hata, "Sistem hatası.") : "Sistem hatası.") + " Lütfen bilgilerinizi kontrol ediniz.");
                 return;
             }
 
             data = guvenliPanelVerisi(data);
+            if(!cacheRender) lokalPanelCacheYaz_(panelKod, data);
 
             if(data.duyuru) {
                 var d = document.getElementById('duyuru');
@@ -445,11 +512,11 @@
                 waAlan.style.display = 'block';
             }
 
-            document.getElementById('panel-guncelleme').textContent = "Son güncelleme: " + data.guncellemeTarihi;
+            document.getElementById('panel-guncelleme').textContent = "Son güncelleme: " + data.guncellemeTarihi + (cacheRender ? " · güncel kontrol ediliyor" : "");
             document.getElementById('card').style.display = 'block';
 
-            // Panel kullanıcıya gösterildikten sonra ziyaret logunu arka planda yaz.
-            setTimeout(logZiyaretiArkaPlandaGonder, 80);
+            // Panel kullanıcıya gösterildikten sonra ziyaret logunu yalnızca güncel sunucu cevabında arka planda yaz.
+            if(!cacheRender) setTimeout(logZiyaretiArkaPlandaGonder, 80);
         }
 
         function logZiyaretiArkaPlandaGonder() {
