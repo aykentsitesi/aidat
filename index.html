@@ -1,681 +1,1553 @@
-<!DOCTYPE html>
-<!-- AYKENT AIDAT PANELİ — v3.8.8 Dengeli Hız Final: localStorage hızlı gösterim + hafif sunucu ısıtma uyumu -->
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <link rel="preconnect" href="https://script.google.com">
-    <link rel="preconnect" href="https://raw.githubusercontent.com">
-    <title>Aykent Site Yönetimi - Hızlı Aidat Paneli</title>
-    <style>
-        :root{--navy:#1A2B48;--gold:#d6b25e;--ink:#101827;--line:#e6e9ef;--green:#047857;--red:#be123c;--amber:#92400e;--mint:#E8F5E9;--active-green:#27AE60;--cool-gray:#F8F9FA;}
-        *{box-sizing:border-box;margin:0;padding:0;}
-        html{height:100%;overflow-y:scroll;overflow-x:hidden;-webkit-text-size-adjust:100%;}
-        body{min-height:100%;overflow-x:hidden;background:#f3f6fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);font-weight:700;}
-        
-        /* ── PREMIUM GLASSMORPHISM LOADER DESIGN ── */
-        #loader-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(145deg, #0f2747 0%, #1A2B48 50%, #07111f 100%);
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-            overflow: hidden;
-        }
-        .bg-orb1 {
-            position: absolute; width: 280px; height: 280px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(214,178,94,0.18) 0%, transparent 70%);
-            top: -60px; left: -60px;
-            animation: orbFloat1 6s ease-in-out infinite;
-        }
-        .bg-orb2 {
-            position: absolute; width: 240px; height: 240px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(53,93,147,0.35) 0%, transparent 70%);
-            bottom: -50px; right: -50px;
-            animation: orbFloat2 7s ease-in-out infinite;
-        }
-        .glass-card {
-            position: relative; width: 280px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(214,178,94,0.3);
-            border-radius: 28px; padding: 35px 24px 30px;
-            display: flex; flex-direction: column; align-items: center;
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-        }
-        .glass-top-shine {
-            position: absolute; top: 0; left: 16px; right: 16px; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            border-radius: 999px;
-        }
-        .logo-ring {
-            position: relative; width: 130px; height: 130px;
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 20px;
-        }
-        .ring-outer {
-            position: absolute; inset: -14px; border-radius: 50%;
-            border: 1.5px solid rgba(214,178,94,0.4);
-            animation: ringPulse 2.8s ease-in-out infinite;
-        }
-        .ring-inner {
-            position: absolute; inset: -6px; border-radius: 50%;
-            border: 1px solid rgba(214,178,94,0.2);
-            animation: ringPulse 2.8s ease-in-out infinite 0.4s;
-        }
-        .ring-spin {
-            position: absolute; inset: -10px; border-radius: 50%;
-            border: 1.5px solid transparent;
-            border-top-color: rgba(214,178,94,0.7);
-            border-right-color: rgba(214,178,94,0.25);
-            animation: spinRing 2s linear infinite;
-        }
-        .center-logo {
-            width: 130px; height: 130px; border-radius: 50%; object-fit: cover;
-            border: 2px solid rgba(214,178,94,0.5);
-            box-shadow: 0 0 20px rgba(214,178,94,0.15);
-            animation: logoBreath 2.8s ease-in-out infinite;
-        }
-        .site-name {
-            font-size: 19px; font-weight: 950; color: #f4d47c;
-            letter-spacing: 0.8px; text-align: center; margin-bottom: 2px;
-            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-        }
-        .site-sub {
-            font-size: 12px; color: rgba(255,255,255,0.5);
-            text-align: center; letter-spacing: 0.5px; margin-bottom: 22px;
-            font-weight: 800;
-        }
-        .loader-dots {
-            display: flex; gap: 8px; align-items: center; justify-content: center;
-        }
-        .loader-dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: rgba(214,178,94,0.6);
-            animation: dotBlink 1.4s ease-in-out infinite;
-        }
-        .loader-dot:nth-child(2){animation-delay:.2s}
-        .loader-dot:nth-child(3){animation-delay:.4s}
-        .loader-text {
-            margin-top: 12px; font-size: 13px; color: rgba(255,255,255,0.5);
-            letter-spacing: 0.5px; text-align: center; font-weight: 800;
-            animation: labelFade 1.4s ease-in-out infinite;
-        }
-        @keyframes orbFloat1{0%,100%{transform:translate(0,0)}50%{transform:translate(18px,14px)}}
-        @keyframes orbFloat2{0%,100%{transform:translate(0,0)}50%{transform:translate(-14px,-18px)}}
-        @keyframes ringPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
-        @keyframes spinRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-        @keyframes logoBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
-        @keyframes dotBlink{0%,100%{opacity:.3;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
-        @keyframes labelFade{0%,100%{opacity:.4}50%{opacity:.8}}
-        /* ───────────────────────────────────────────────────────────── */
+// =====================================================
+// AYKENT AIDAT HTML PANEL SİSTEMİ — v3.8.12 JSON/HAZIR VERİ İPTAL — AGRESİF CACHE
+// v3.8.12 değişiklikleri:
+// - v3.8.11 Hazır Veri / JSON yayınlama modu iptal edildi.
+// - v3.8.10 agresif cache yapısına temiz dönüş yapıldı.
+// - Panel yine canlı Apps Script + CacheService + localStorage akışıyla çalışır.
+//
+// v3.8.8 değişiklikleri:
+// - v3.8.7’deki ağır “tüm daireleri önden cacheleme” kaldırıldı
+// - Sunucu ısıtma 10 dk aralığa ve hafif AYARLAR cache/ping mantığına döndürüldü
+// - Daire ve kısa kod cache süreleri üretim dengesi için 120 sn / 30 sn olarak korundu
+// - HTML localStorage hızlı gösterim yaklaşımıyla uyumludur; hız algısı istemci cache’iyle sağlanır
+//
+// v3.8.9 değişiklikleri:
+// - Blok sekmesinde getDataRange() kaldırıldı; önce A sütunundan satır indeksi cache’lenir,
+//   sonra sadece ilgili dairenin 2 satırı x gerekli kolonları okunur.
+// - KISA_LINKLER tek kod başına sürekli taranmasın diye kısa süreli kod haritası cache’i eklendi.
+// - Log append için kısa LockService koruması eklendi.
+//
+// v3.8.10 değişiklikleri:
+// - Kısa link / daire / ayarlar cache süreleri hız lehine uzatıldı.
+// - Cache temizleme artık cache versiyonunu artırır; tekil daire/kod cacheleri de eski namespace’te kalıp kullanılmaz.
+// - Not: PASIF link veya ödeme değişiklikleri için acil güncelleme gerekiyorsa menüden Önbelleği Temizle çalıştırılmalıdır.
+//
+// v3.8.6 değişiklikleri:
+// - HTML tarafında erken panik timeout yerine yumuşak bekleme + geç final hata mantığıyla uyumlu
+//
+// v3.8.4 değişiklikleri:
+// - AYARLAR açıklamaları güçlendirildi: WA değişken listesi ve yıl sonu talimatı eklendi
+// - AYARLAR Sekmesini Oluştur / Güncelle artık mevcut satırların sadece AÇIKLAMA sütununu da günceller
+// - WEB_APP_URL / APPS_SCRIPT_URL ayrımı daha net bırakıldı; KOD_CACHE_SURE 30 sn olarak korundu
+// - JSONP callback beyaz listeye alındı: veriYukle, logYazildi, sunucuIsitildi dışında callback kabul edilmez
+//
+// v3.8.3 değişiklikleri:
+// - Ziyaret logu panel verisini geciktirmemesi için ayrı JSONP isteğine taşındı
+// - Ana panel cevabı artık log yazımını beklemez; HTML panel açıldıktan sonra arka planda mode=log isteği gönderir
+// - ZIYARET_LOG_AKTIF varsayılanı EVET yapıldı; log açıkken bile panel açılışı log yazımını beklemez
+//
+// v3.8.1 değişiklikleri:
+// - Web panel açılışı hızlandırıldı: aynı istek içinde Spreadsheet openById tekrarları azaltıldı
+// - KISA_LINKLER için 30 sn kısa cache eklendi; PASIF değişikliği en fazla 30 sn gecikebilir
+// - ZIYARET_LOG_AKTIF ayarı eklendi; v3.8.3 ile log arka plana taşındı
+//
+// v3.8.0 değişiklikleri:
+// - WhatsApp linkleri artık WHATSAPP_MESAJLARI sekmesini her çalıştırmada temizleyip güncelden yazar
+// - TELEFON_LİSTESİ sekmesine kesinlikle yazma/silme yapılmaz; sadece okunur
+// - Eski boş kolon arama yardımcıları kaldırıldı
+//
+// v3.7.9 değişiklikleri:
+// - Kullanılmayan eski WhatsApp yardımcı fonksiyonları temizlendi
+// - Kullanılmayan kolonTamamenBosMu_, telefonMapOlustur_, htmlEscape_ kaldırıldı
+// - YONETIM_WHATSAPP açıklaması uluslararası telefon desteğine göre güncellendi
+//
+// v3.7.8 değişiklikleri:
+// - WhatsApp boş kolon arama performansı düzeltildi: kolon başına API çağrısı yerine tek toplu okuma
+// - v3.7.0 üzerine değişiklikler:
+// - AYARLAR sekmesine AÇIKLAMA sütunu eklendi
+// - trackingLogKaydet_ 2 dk mükerrer önleme eklendi
+// - ayarlarSekmesiniOlustur başlık 3 sütuna genişletildi
+// - setValues sütun sayısı 3'e düzeltildi
+//
+// v3.7.2 üzerine değişiklikler:
+// - whatsappLinkleriniOlustur boş KISA_LINKLER/TELEFON_LİSTESİ kontrolü eklendi
+// - WhatsApp çıktısı kişi bazlı tam tablo olarak güvenli yazılıyor
+// - telefonNormalize_ 10 haneli Türkiye GSM numarası desteği eklendi
+// - JSONP callback adı güvenli hale getirildi
+// - daireSatiriBul_ metin/sıfır dolgulu daire numaralarına dayanıklı hale getirildi
+//
+// v3.7.3 üzerine değişiklikler:
+// - WhatsApp linkleri artık eski sütunları silmeden sağa yeni WA_tarih sütunu olarak eklenir
+// - A:E kimlik sütunları korunur/güncellenir, eski WA geçmiş sütunları korunur
+// - Kişi bazlı satır anahtarı ile mevcut satırlar eşleştirilir, yeni kişiler alta eklenir
+// - Eski A:D + WA sütunlu sekmelerde geçmiş sütunlar korunarak kimlik sütunları açılır
+// - WhatsApp Sekmesini Güncelle işlemi WA geçmişi varsa güvenlik için durdurulur
+//
+// v3.7.4 üzerine değişiklikler:
+// - TELEFON_LİSTESİ / KISA_LINKLER blok-daire eşleşmesi normalize edildi
+// - 01 / 1 ve a / A gibi yazım farklarında telefon eşleşmesi güçlendirildi
+// - Hiç WhatsApp linki üretilemezse boş WA sütunu açılması engellendi
+// - Yönetim WhatsApp numarası telefonNormalize_ ile normalize edildi
+// - YIL ayarı hatalı girilirse devir mesajında NaN görünmesi engellendi
+//
+// v3.7.5 üzerine değişiklikler:
+// - v3.7.5: WhatsApp linkleri eski veriye dokunmadan boş alana yazılıyordu; v3.8.0 ile WA sekmesi güncel çıktı için temizlenir
+// - WhatsApp Sekmesini Güncelle menüden kaldırıldı ve elle çalıştırılırsa veri silmeden durur
+// - Blok sekmesi arama A/a gibi büyük-küçük harf farklarını tolere eder
+// - KISA_LINKLER kod okuma cache'i kaldırıldı; PASIF yapılan link hemen pasif olur
+// - 1.234 gibi metin para girişleri binlik ayraç olarak doğru yorumlanır
+//
+// v3.7.6 üzerine değişiklikler:
+// - WhatsApp link oluşturma sonunda telefonu eksik/geçersiz daireler raporlanır
+// - Yedek boş satır varsa ama aynı blok-daire için başka geçerli telefon varsa rapora alınmaz
+// - TELEFON_EKSIK_RAPORU sekmesi otomatik oluşturulur/güncellenir
+//
+// v3.7.7 üzerine değişiklikler:
+// - telefonNormalize_ Türkiye dışı numaraları ülke koduyla destekler
+// - + / 00 uluslararası formatları temizlenir; 05xx ve 5xx Türkiye GSM olarak 90'a çevrilir
+// - Ülke kodu olmayan 0 ile başlayan yabancı yerel numaralar geçersiz sayılıp rapora düşer
+// =====================================================
 
-        .duyuru{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(90deg,#8a6a22,#d6b25e,#8a6a22);color:#111827;text-align:center;padding:10px;font-size:15px;line-height:1.25;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.22);display:none;}
-        .wrap{display:flex;justify-content:center;min-height:100vh;padding-top:41px;}
-        .card{width:100%;max-width:560px;background:white;padding-bottom:20px;box-shadow:0 16px 48px rgba(0,0,0,.16);border-radius:0 0 20px 20px; display: none;}
-        
-        .hero{background:radial-gradient(circle at top left,#355d93 0,#0f2747 42%,#07111f 100%);color:white;text-align:center;padding:26px 20px 22px;border-bottom:4px solid var(--gold);}
-        .blok{font-size:31px;line-height:1.1;font-weight:950;letter-spacing:.2px;}
-        .isim{margin-top:8px;color:#f4d47c;font-size:22px;line-height:1.2;font-weight:850;word-break:break-word;}
-        
-        .summary-sticky{padding:10px 12px 6px;}
-        .summary{display:flex;gap:8px;}
-        .box{flex:1;min-width:0;border-radius:16px;padding:14px 8px;text-align:center;white-space:pre-line;word-break:break-word;line-height:1.15;box-shadow:0 4px 6px rgba(0,0,0,.08);border:1px solid rgba(214,178,94,.18);transition:transform .2s;}
-        .box:hover{transform:translateY(-2px);}
-        .box .small{font-size:13px;display:block;margin-bottom:5px;font-weight:950;letter-spacing:.2px;}
-        .box .big{font-size:21px;display:block;font-weight:950;}
-        
-        .green{background:linear-gradient(180deg,#ecfdf5,var(--mint));color:var(--green);}
-        .red{background:linear-gradient(180deg,#fff1f2,#ffe4e6);color:var(--red);}
-        .gray{background:linear-gradient(180deg,var(--cool-gray),#e5e7eb);color:#475467;}
-        .yellow{background:linear-gradient(180deg,#fff7ed,#fef3c7);color:var(--amber);}
-        .pink{background:linear-gradient(180deg,#fff0f0,#ffd6d6);color:#c0152a;}
-        
-        .table-wrap{padding:14px 14px 0;overflow-x:hidden;}
-        table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(15,23,42,.10);border:1px solid #e5e7eb;}
-        th{background:var(--navy);color:#f4d47c;padding:13px 4px;font-size:17px;font-weight:950;}
-        td{padding:11px 4px;text-align:center;border-bottom:1px solid var(--line);word-break:break-word;font-size:17px;font-weight:900;background:white;}
-        td:first-child{text-align:left;padding-left:14px;color:#111827;background:var(--cool-gray);}
-        
-        .paid{background:var(--mint)!important;color:#047857;}
-        .muted{background:#f1f5f9!important;color:#64748b;}
-        
-        .note{margin:14px 14px 0;background:#fff7ed;color:#9a3412;border-left:6px solid var(--gold);border-radius:14px;padding:14px;white-space:pre-line;line-height:1.3;font-size:16px;font-weight:850;box-shadow:0 2px 8px rgba(0,0,0,.06); display: none;}
-        
-        .payment{margin:16px 14px 8px;border-radius:18px;overflow:hidden;border:1px solid rgba(214,178,94,.36);background:white;box-shadow:0 6px 20px rgba(15,23,42,.10);}
-        .payment-head{background:linear-gradient(90deg,#07111f,var(--navy));color:#f4d47c;padding:16px;text-align:center;font-weight:950;font-size:20px;letter-spacing:.3px;}
-        .payment-row{display:flex;width:100%;border-top:1px solid #e5e7eb;min-height:58px;}
-        .payment-label{width:100px;flex:0 0 100px;background:#fffaf0;color:#8a6a22;font-weight:950;padding:12px 10px;font-size:14px;display:flex;align-items:center;}
-        .payment-value{flex:1;min-width:0;padding:12px 10px;font-size:15px;word-break:break-word;line-height:1.22;display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:850;}
-        .payment-text{flex:1;min-width:0;word-break:break-word;color:#111827;}
-        
-        .copy-btn{min-height:42px;min-width:76px;background:linear-gradient(135deg,#1e8449,var(--active-green));color:#ffffff;border:none;padding:8px 14px;font-size:13px;border-radius:8px;cursor:pointer;white-space:nowrap;flex:0 0 auto;font-weight:950;transition:background .3s,transform .15s,box-shadow .3s;box-shadow:0 2px 8px rgba(39,174,96,.3);}
-        .copy-btn:hover{background:linear-gradient(135deg,#145a32,#1e8449);box-shadow:0 4px 14px rgba(39,174,96,.45);}
-        .copy-btn:active{transform:scale(.94);}
-        
-        /* ── DİNAMİK WHATSAPP DESTEK BUTONU ── */
-        .whatsapp-container { padding: 8px 14px 0; display: none; }
-        .whatsapp-btn {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            width: 100%; min-height: 50px; background: #25D366; color: white;
-            text-decoration: none; border-radius: 14px; font-size: 16px; font-weight: 950;
-            box-shadow: 0 4px 12px rgba(37,211,102,0.3); transition: background 0.3s, transform 0.2s;
-        }
-        .whatsapp-btn:hover { background: #20ba5a; transform: translateY(-1px); }
-        .whatsapp-btn:active { transform: translateY(1px); }
+// ── Dosya ID'leri ─────────────────────────────────
+const ANA_DOSYA_ID  = '13GjGHXtJk7sk4alTwnfvR6TfRgwcPcq07TMqcgqzxAk';
+const LINK_DOSYA_ID = '1gubjr-Ljp6bE7jJYwAIjtnHdSwGJIeGv8tGWNWIrZWU';
 
-        .footer{text-align:center;color:#667085;font-size:12px;padding:16px 10px 10px;font-weight:800;line-height:1.35;}
-        .footer-sign{margin-top:3px;font-size:10.5px;color:#98a2b3;font-weight:750;letter-spacing:.1px;}
-        .footer-sign span{color:#9b7a2b;font-weight:850;}
-        .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1A2B48;color:#f4d47c;padding:12px 24px;border-radius:999px;font-size:16px;opacity:0;transition:opacity .2s ease;z-index:9999;font-weight:950;box-shadow:0 4px 16px rgba(0,0,0,.25);}
-        .toast.show{opacity:1;}
-        
-        /* ── Gelişmiş XSS Korumalı Hata Kartı ── */
-        .error-card{background:#fff1f2;color:#be123c;padding:26px 20px;border-radius:18px;margin:40px auto;max-width:400px;text-align:center;box-shadow:0 10px 25px rgba(190,18,60,0.15);border:1px solid #fecdd3;display:none;font-size:16px;line-height:1.4;}
-        .error-card strong { font-size: 19px; display: block; margin-bottom: 8px; font-weight: 950; }
+// ── Sekme adları ──────────────────────────────────
+const LINK_SHEET_ADI               = 'KISA_LINKLER';
+const TELEFON_SHEET_ADI            = 'TELEFON_LİSTESİ';
+const LOG_SHEET_ADI                = 'ZIYARET_LOG';
+const LOG_OZET_ADI                 = 'ZIYARET_LOG_OZET';
+const AYARLAR_SHEET_ADI            = 'AYARLAR';
+const WHATSAPP_MESAJLARI_SHEET_ADI = 'WHATSAPP_MESAJLARI';
+const TELEFON_EKSIK_RAPOR_ADI      = 'TELEFON_EKSIK_RAPORU';
 
-        @media(max-width:580px){
-            .card{max-width:100%;box-shadow:none;border-radius:0;}
-            .summary{gap:5px;}
-            .summary-sticky{padding:8px 8px 4px;top:39px;}
-            .table-wrap{padding:10px 8px 0;}
-            .payment{margin:12px 8px 8px;}
-            .note{margin:10px 8px 0;}
-        }
-    </style>
-</head>
-<body>
+// ── Cache süreleri ─────────────────────────────────
+const AYARLAR_CACHE_SURE = 300;   // 5 dk: AYARLAR sık değişmez; açılışta gereksiz Sheets okumasını azaltır.
+const DAIRE_CACHE_SURE   = 300;   // 5 dk: aynı daire tekrar açıldığında ana tablo okunmaz.
+const KOD_CACHE_SURE     = 300;   // 5 dk: tekil kısa kod cache’i. PASIF için acil durumda Önbelleği Temizle kullanın.
+const KOD_MAP_CACHE_SURE = 600;   // 10 dk: KISA_LINKLER haritası sık taranmaz.
+const DAIRE_INDEX_CACHE_SURE = 300;  // 5 dk: satır ekleme/silmede bayat index riskini azaltır.
+const BLOK_OKUMA_KOLON_SAYISI = 17; // A:Q; daire, isim, devir, 12 ay ve notlar için yeterli.
+const CACHE_JSON_MAX_UZUNLUK = 90000; // CacheService tek kayıt sınırına yaklaşmamak için güvenli eşik.
+const CACHE_VERSION_PROP = 'AYKENT_PANEL_CACHE_VERSION_V1';
 
-    <!-- Premium Giriş Paneli -->
-    <div id="loader-container">
-        <div class="bg-orb1"></div>
-        <div class="bg-orb2"></div>
-        <div class="glass-card">
-            <div class="glass-top-shine"></div>
-            <div class="logo-ring">
-                <div class="ring-outer"></div>
-                <div class="ring-inner"></div>
-                <div class="ring-spin"></div>
-                <img src="https://raw.githubusercontent.com/aykentsitesi/aykent-assets/main/aykent%20logo.jpg" alt="Aykent Sitesi" class="center-logo" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'">
-            </div>
-            <div class="site-name">AYKENT SİTESİ</div>
-            <div class="site-sub">Aidat Paneli</div>
-            <div class="loader-dots">
-                <div class="loader-dot"></div>
-                <div class="loader-dot"></div>
-                <div class="loader-dot"></div>
-            </div>
-            <div class="loader-text">Bilgileriniz getiriliyor...</div>
-        </div>
-    </div>
+// ── Sabitler ──────────────────────────────────────
+const ODEME_IBAN  = 'TR980003200000000097729440';
+const ODEME_ALICI = 'Aykent Site Yöneticiliği';
 
-    <div id="duyuru" class="duyuru"></div>
-    <div id="error" class="error-card"></div>
+const COL_DAIRE  = 0;
+const COL_ISIM   = 1;
+const COL_DEVIR  = 2;
+const COL_AY     = 3;
+const COL_NOTLAR = 16;
 
-    <div id="wrap" class="wrap">
-        <div id="card" class="card">
-            <div class="hero">
-                <div id="panel-baslik" class="blok">-</div>
-                <div id="panel-isim" class="isim">-</div>
-            </div>
-            
-            <div class="summary-sticky">
-                <div class="summary" id="summary-row-1"></div>
-                <div class="summary" id="summary-row-2" style="margin-top:6px;"></div>
-            </div>
-            
-            <div id="panel-not" class="note"></div>
-            
-            <div class="table-wrap">
-                <table>
-                    <thead><tr><th>AY</th><th>AİDAT</th><th>EK</th></tr></thead>
-                    <tbody id="tablo-govde"></tbody>
-                </table>
-            </div>
-            
-            <div class="payment">
-                <div class="payment-head">ÖDEME BİLGİLERİ</div>
-                <div id="odeme-govde"></div>
-            </div>
+const AYLAR = [
+  'OCAK','ŞUBAT','MART','NİSAN','MAYIS','HAZİRAN',
+  'TEMMUZ','AĞUSTOS','EYLÜL','EKİM','KASIM','ARALIK'
+];
 
-            <!-- Dinamik Akıllı WhatsApp Destek Alanı -->
-            <div id="whatsapp-alan" class="whatsapp-container">
-                <a id="whatsapp-link" href="#" target="_blank" class="whatsapp-btn">
-                    <svg style="width:22px;height:22px;fill:currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.243 8.432 3.498 2.256 2.255 3.497 5.25 3.496 8.435-.003 6.634-5.354 11.982-11.933 11.982-1.996-.001-3.957-.5-5.698-1.447L0 24zm6.59-4.859c1.72.101 2.382.204 4.417.205 5.516 0 10.029-4.505 10.032-10.016.001-2.64-1.024-5.122-2.887-6.986-1.862-1.864-4.343-2.89-6.984-2.891-5.522 0-10.033 4.508-10.035 10.021-.001 2.007.518 2.975 1.512 4.704l-.956 3.493 3.585-.94c1.643.914 2.32 1.314 4.316 1.314zM16.518 14c-.258-.127-1.526-.749-1.762-.834-.236-.086-.407-.127-.578.128-.171.256-.664.834-.813.1-.148-.127-.297-.181-.554-.308-2.172-.962-3.56-3.137-3.667-3.281-.107-.144-.016-.223.056-.305.105-.119.255-.308.337-.419.082-.11.11-.186.165-.313.055-.128.027-.236-.014-.321-.04-.086-.407-1.012-.557-1.383-.146-.358-.295-.308-.407-.314-.105-.005-.226-.006-.347-.006-.12 0-.317.045-.483.226-.166.181-.634.616-.634 1.501 0 .885.643 1.74 1.731 1.884 2.253 3.22 3.738 3.535 5.234 3.639 1.15.08 2.137-.019 2.946-.139.902-.134 1.873-.762 2.138-1.463.264-.7 0-1.298-.079-1.422-.079-.124-.29-.199-.549-.326z"/></svg>
-                    Yöneticiye WhatsApp'tan Yaz
-                </a>
-            </div>
-            
-            <div id="panel-footer" class="footer">
-                <div id="panel-guncelleme"></div>
-                <div class="footer-sign">© 2026 Aykent Site Yönetimi · <span>Tasarım: Fatih Oruç</span></div>
-            </div>
-        </div>
-    </div>
+const AYAR_AIDAT_KEYS = [
+  'AIDAT_OCAK','AIDAT_SUBAT','AIDAT_MART','AIDAT_NISAN',
+  'AIDAT_MAYIS','AIDAT_HAZIRAN','AIDAT_TEMMUZ','AIDAT_AGUSTOS',
+  'AIDAT_EYLUL','AIDAT_EKIM','AIDAT_KASIM','AIDAT_ARALIK'
+];
 
-    <div id="toast" class="toast">Kopyalandı</div>
+// ── Global önbellekler ─────────────────────────────
+var _YIL = null;
+var _VARSAYILANLAR_CACHE = null;
+var _ANA_SS_CACHE = null;
+var _LINK_SS_CACHE = null;
 
-    <script>
-        // ⚙️ SADECE GEREKİRSE BU SATIRI DEĞİŞTİR:
-        // Apps Script Web App dağıtımındaki /exec URL adresi. GitHub WEB_APP_URL ile karıştırma.
-        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyYZv0MqrPYX2wCXQhiv83nZA8TfzhjN7QEP98LKQFGjUgnBjng96ngUxT_cLbH_W-L/exec";
+function anaDosyasi_() {
+  if (!_ANA_SS_CACHE) _ANA_SS_CACHE = SpreadsheetApp.openById(ANA_DOSYA_ID);
+  return _ANA_SS_CACHE;
+}
 
-        // Dengeli hız modu: varsa son panel verisini hemen gösterir, güncel veriyi arkadan yeniler.
-        // Local cache en fazla 5 dakika kullanılır; gerçek güncel veri arkadan kontrol edilir.
-        const API_SOFT_TIMEOUT_MS = 6000;
-        const API_HARD_TIMEOUT_MS = 15000;
-        const LOCAL_PANEL_CACHE_MS = 5 * 60 * 1000;
-        var apiSoftTimeoutHandle = null;
-        var apiTimeoutHandle = null;
-        var apiCevapGeldi = false;
-        var panelKod = '';
-        var ziyaretLogGonderildi = false;
-        var panelCacheGosterildi = false;
+function linkDosyasi_() {
+  if (!_LINK_SS_CACHE) _LINK_SS_CACHE = SpreadsheetApp.openById(LINK_DOSYA_ID);
+  return _LINK_SS_CACHE;
+}
 
-        function temizleKurus(deger) {
-            if (typeof deger === 'string') {
-                return deger.replace(/,00/g, '');
-            }
-            return deger;
-        }
+function evetMi_(v) {
+  var s = temizle_(v).toUpperCase();
+  return s === 'EVET' || s === 'E' || s === 'YES' || s === 'Y' || s === 'TRUE' || s === '1' || s === 'AÇIK' || s === 'ACIK';
+}
 
-        // Sadece Tutar alanını kopyalarken kullanılır. IBAN için ibanTemizleKopya() kullanılır.
-        function sadeceRakam(deger) {
-            if (typeof deger === 'string') {
-                return deger.replace(/,00/g, '').replace(/ TL/g, '').replace(/\./g, '').trim();
-            }
-            return deger;
-        }
+function cacheKeyParcasi_(v) {
+  return temizle_(v)
+    .toUpperCase()
+    .replace(/[^0-9A-ZÇĞİÖŞÜ_-]/g, '_')
+    .substring(0, 120);
+}
 
-        function ibanTemizleKopya(deger) {
-            if (typeof deger === 'string') {
-                return deger.replace(/\s+/g, '').trim();
-            }
-            return deger;
-        }
+var _CACHE_VERSION_MEM = null;
 
-        function getParam(name) {
-            return new URLSearchParams(window.location.search).get(name);
-        }
+function cacheVersion_() {
+  if (_CACHE_VERSION_MEM) return _CACHE_VERSION_MEM;
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var v = props.getProperty(CACHE_VERSION_PROP);
+    if (!v) {
+      v = String(Date.now());
+      props.setProperty(CACHE_VERSION_PROP, v);
+    }
+    _CACHE_VERSION_MEM = v;
+    return v;
+  } catch (e) {
+    return 'fallback';
+  }
+}
 
-        function lokalCacheKey_(kod) {
-            return 'aykent_aidat_panel_v1_' + String(kod || '');
-        }
+function cacheKeyTam_(key) {
+  var raw = 'c' + cacheVersion_() + '_' + String(key || '');
+  return raw.length > 230 ? raw.substring(0, 230) : raw;
+}
 
-        function lokalPanelCacheOku_(kod) {
-            try {
-                if(!window.localStorage || !kod) return null;
-                var raw = localStorage.getItem(lokalCacheKey_(kod));
-                if(!raw) return null;
-                var paket = JSON.parse(raw);
-                if(!paket || !paket.zaman || !paket.data) return null;
-                if(Date.now() - Number(paket.zaman) > LOCAL_PANEL_CACHE_MS) return null;
-                return paket.data;
-            } catch(e) {
-                return null;
-            }
-        }
+function cacheVersiyonunuYenile_() {
+  try {
+    var v = String(Date.now());
+    PropertiesService.getScriptProperties().setProperty(CACHE_VERSION_PROP, v);
+    _CACHE_VERSION_MEM = v;
+  } catch (e) {}
+}
 
-        function lokalPanelCacheYaz_(kod, data) {
-            try {
-                if(!window.localStorage || !kod || !data || data.hata) return;
-                localStorage.setItem(lokalCacheKey_(kod), JSON.stringify({
-                    zaman: Date.now(),
-                    data: data
-                }));
-            } catch(e) {}
-        }
+function cacheJsonOku_(key) {
+  try {
+    var raw = CacheService.getScriptCache().get(cacheKeyTam_(key));
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    try { CacheService.getScriptCache().remove(cacheKeyTam_(key)); } catch (e2) {}
+    return null;
+  }
+}
 
-        function apiZamanlayicilariTemizle_() {
-            if(apiSoftTimeoutHandle) {
-                clearTimeout(apiSoftTimeoutHandle);
-                apiSoftTimeoutHandle = null;
-            }
-            if(apiTimeoutHandle) {
-                clearTimeout(apiTimeoutHandle);
-                apiTimeoutHandle = null;
-            }
-        }
+function cacheJsonYaz_(key, obj, sure) {
+  try {
+    var raw = JSON.stringify(obj);
+    if (raw && raw.length < CACHE_JSON_MAX_UZUNLUK) {
+      CacheService.getScriptCache().put(cacheKeyTam_(key), raw, sure);
+    }
+  } catch (e) {}
+}
 
-        function beklemeYazisiGuncelle_(metin) {
-            var el = document.querySelector('.loader-text');
-            if(el) el.textContent = metin || 'Bilgileriniz getiriliyor...';
-        }
 
-        function paneliBaslat() {
-            var kod = getParam('k') || getParam('id');
-            panelKod = kod || '';
-            if(!kod) {
-                showError("Geçersiz Bağlantı", "Kullanılan link hatalı veya eksik kod içeriyor. Lütfen site yönetimi ile görüşünüz.");
-                return;
-            }
+// =====================================================
+// MENÜ
+// =====================================================
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu('Aidat HTML Panel')
+    .addItem('🔧 AYARLAR Sekmesini Oluştur / Güncelle', 'ayarlarSekmesiniOlustur')
+    .addSeparator()
+    .addItem('📱 WhatsApp Linklerini Oluştur', 'whatsappLinkleriniOlustur')
+    .addSeparator()
+    .addItem('📊 Log Özet Dashboard', 'logOzetDashboardOlustur')
+    .addItem('🗑️ Log Temizle', 'logKayitlariniTemizle')
+    .addItem('📋 Log Sayısı', 'logKontrolEt')
+    .addSeparator()
+    .addItem('🔄 Önbelleği (Cache) Temizle', 'cacheTumunuTemizle')
+    .addItem('🧹 JSON/Hazır Veri Kalıntılarını Temizle', 'jsonHazirVeriKalintilariniTemizle')
+    .addSeparator()
+    .addItem('🔥 Sunucu Isıtma Kur (10 dk)', 'sunucuIsitmaTriggerKur')
+    .addItem('🧊 Sunucu Isıtma Kaldır', 'sunucuIsitmaTriggerKaldir')
+    .addToUi();
+}
 
-            var cached = lokalPanelCacheOku_(kod);
-            if(cached) {
-                panelCacheGosterildi = true;
-                veriYukle(cached, true);
-            }
+// =====================================================
+// WEB APP GİRİŞ NOKTASI — Sadece JSONP (GitHub HTML ile)
+// =====================================================
+function doGet(e) {
+  try {
+    var mode = temizle_((e && e.parameter && (e.parameter.mode || e.parameter.islem)) || '').toLowerCase();
 
-            apiSoftTimeoutHandle = setTimeout(function() {
-                if(apiCevapGeldi || panelCacheGosterildi) return;
-                beklemeYazisiGuncelle_("Sistem biraz yoğun, bilgileriniz getirilmeye devam ediyor...");
-            }, API_SOFT_TIMEOUT_MS);
+    // Sunucu ısıtma kontrolü: panel verisi üretmez; küçük bir Sheets erişimiyle sistemi sıcak tutar.
+    if (mode === 'ping' || mode === 'isit' || mode === 'warm') {
+      return sunucuIsitmaIstek_(e);
+    }
 
-            apiTimeoutHandle = setTimeout(function() {
-                if(apiCevapGeldi) return;
-                if(panelCacheGosterildi) {
-                    // Son kayıt ekranda durur; güncel istek yetişmediyse kullanıcıya kırmızı hata basma.
-                    return;
-                }
-                showError("Bağlantı Zaman Aşımı", "Sistem şu anda yanıt vermedi. Lütfen internet bağlantınızı kontrol edip sayfayı yenileyiniz veya site yönetimi ile görüşünüz.");
-            }, API_HARD_TIMEOUT_MS);
+    var kod = temizle_((e && e.parameter && e.parameter.k) || '');
+    if (!kod) {
+      return jsonpHata_(e, 'Eksik veya hatalı link kodu.');
+    }
 
-            var script = document.createElement('script');
-            script.src = GOOGLE_API_URL + '?k=' + encodeURIComponent(kod) + '&callback=veriYukle&_t=' + Date.now();
-            script.onerror = function() {
-                if(apiCevapGeldi) return;
-                apiZamanlayicilariTemizle_();
-                if(panelCacheGosterildi) {
-                    toast("Güncel bağlantı alınamadı; son kayıt gösteriliyor");
-                    return;
-                }
-                showError("Bağlantı Hatası", "Aidat sistemiyle bağlantı kurulamadı. Lütfen daha sonra tekrar deneyiniz veya site yönetimi ile görüşünüz.");
-            };
-            document.body.appendChild(script);
-        }
+    var kayit = kisaKoddanDaireBul_(kod);
+    if (!kayit) {
+      return jsonpHata_(e, 'Bu link geçersiz veya pasif görünüyor.');
+    }
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', paneliBaslat);
-        } else {
-            paneliBaslat();
-        }
+    if (mode === 'log' || mode === 'ziyaret_log') {
+      return ziyaretLogIstek_(e, kayit);
+    }
 
-        function veriYukle(data, cacheRender) {
-            cacheRender = cacheRender === true;
-            if(!cacheRender) {
-                apiCevapGeldi = true;
-                apiZamanlayicilariTemizle_();
-            }
-            hataKapat_();
+    var ham     = anaDosyadanVeriGetir_(kayit);
+    var ayarlar = ayarlariOku_();
 
-            var loader = document.getElementById('loader-container');
-            if(loader) {
-                loader.style.opacity = '0';
-                loader.style.visibility = 'hidden';
-                setTimeout(function(){ loader.remove(); }, 500);
-            }
-            
-            if(!data || data.hata) {
-                // Sunucu bilinçli hata döndürdüyse eski cache ile saklama; hatayı göster.
-                showError("Kayıt Bulunamadı", (data ? guvenliMetin(data.hata, "Sistem hatası.") : "Sistem hatası.") + " Lütfen bilgilerinizi kontrol ediniz.");
-                return;
-            }
+    var V          = varsayilanlar_();
+    var devir      = sayiYap_(ham.veri1[COL_DEVIR]);
+    var ayVerileri = ayVerileriOlustur_(ham.veri1, ham.veri2, ayarlar);
+    var ozet       = ozetHesapla_(ayVerileri, devir);
+    var toplamBorc = ozet.borcYil + ozet.devir;
 
-            data = guvenliPanelVerisi(data);
-            if(!cacheRender) lokalPanelCacheYaz_(panelKod, data);
+    var whatsappNo = telefonNormalize_(ayarlar['YONETIM_WHATSAPP']) || '905393431533';
 
-            if(data.duyuru) {
-                var d = document.getElementById('duyuru');
-                d.textContent = data.duyuru;
-                d.style.display = 'block';
-            }
+    var outputData = {
+      basarili      : true,
+      blok          : kayit.blok,
+      daire         : kayit.daire,
+      isim          : temizle_(ham.veri1[COL_ISIM]) || '-',
+      duyuru        : temizle_(ayarlar['DUYURU_METNI'])   || V.DUYURU_METNI,
+      etiketOdenen  : temizle_(ayarlar['ODENEN_ETIKETI']) || V.ODENEN_ETIKETI,
+      etiketBorc    : temizle_(ayarlar['BORC_ETIKETI'])   || V.BORC_ETIKETI,
+      etiketDevir   : temizle_(ayarlar['DEVIR_ETIKETI'])  || V.DEVIR_ETIKETI,
+      odenenYil     : paraFormatla_(ozet.odenenYil),
+      borcYil       : ozet.borcYil > 0 ? paraFormatla_(ozet.borcYil) : '0,00 TL',
+      borcYilRaw    : ozet.borcYil,
+      devir         : ozet.devir > 0  ? paraFormatla_(ozet.devir)    : 'Borç yok',
+      devirRaw      : ozet.devir,
+      toplamBorc    : toplamBorc > 0  ? paraFormatla_(toplamBorc)    : 'Yok',
+      toplamBorcRaw : toplamBorc,
+      notlar        : notlariOlustur_(ham.veri1, ham.veri2),
+      tablo         : ayVerileri.map(function(ay) {
+        return {
+          ay        : ay.ad,
+          aidatText : odemeText_(ay.raw1),
+          aidatClass: odemeClass_(ay.raw1),
+          ekText    : odemeText_(ay.raw2),
+          ekClass   : odemeClass_(ay.raw2)
+        };
+      }),
+      odemeAlici    : ODEME_ALICI,
+      odemeIban     : ODEME_IBAN,
+      odemeTutar    : Math.floor(toplamBorc),
+      odemeAciklama : kayit.blok + ' ' + kayit.daire + ' - ' +
+                      (temizle_(ham.veri1[COL_ISIM]) || '-') + ' Aidat',
+      guncellemeTarihi: Utilities.formatDate(
+                          new Date(), 'Europe/Istanbul', 'dd.MM.yyyy HH:mm'),
+      whatsappNo    : whatsappNo
+    };
 
-            document.getElementById('panel-baslik').textContent = data.blok + " · DAİRE " + data.daire;
-            document.getElementById('panel-isim').textContent = data.isim;
+    var callback = callbackAdi_(e);
 
-            var odenenTemiz = temizleKurus(data.odenenYil);
-            var borcTemiz = temizleKurus(data.borcYil);
-            var devirTemiz = temizleKurus(data.devir);
-            var toplamTemiz = temizleKurus(data.toplamBorc);
+    return ContentService
+      .createTextOutput(callback + '(' + JSON.stringify(outputData) + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
 
-            // 🔒 XSS Korumalı 1. Özet Satırı Yapılandırması
-            var row1 = document.getElementById('summary-row-1');
-            row1.innerHTML = '';
-            
-            row1.appendChild(createSummaryBox(data.etiketOdenen, odenenTemiz, 'green'));
-            if(data.borcYilRaw > 0) {
-                row1.appendChild(createSummaryBox(data.etiketBorc, borcTemiz, 'red'));
-            } else {
-                row1.appendChild(createSummaryBox(data.etiketBorc, '0 TL', 'green'));
-            }
+  } catch (err) {
+    Logger.log('doGet hata: ' + (err.stack || err.message));
+    return jsonpHata_(e, 'Sistem hatası oluştu.');
+  }
+}
 
-            // 🔒 XSS Korumalı 2. Özet Satırı Yapılandırması
-            var row2 = document.getElementById('summary-row-2');
-            row2.innerHTML = '';
+function jsonpHata_(e, mesaj) {
+  var callback = callbackAdi_(e);
+  return ContentService
+    .createTextOutput(callback + '(' + JSON.stringify({ hata: mesaj }) + ')')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
 
-            if(data.devirRaw > 0) {
-                row2.appendChild(createSummaryBox(data.etiketDevir, devirTemiz, 'yellow'));
-            } else {
-                row2.appendChild(createSummaryBox(data.etiketDevir, 'Borç yok', 'gray'));
-            }
+function jsonpCevap_(e, obj) {
+  var callback = callbackAdi_(e);
+  return ContentService
+    .createTextOutput(callback + '(' + JSON.stringify(obj || {}) + ')')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
 
-            if(data.toplamBorcRaw <= 0) {
-                row2.appendChild(createSummaryBox('TOPLAM DURUM', 'BORÇ YOK 👍', 'green'));
-            } else {
-                row2.appendChild(createSummaryBox('TOPLAM BORÇ', toplamTemiz, 'pink'));
-            }
+function ziyaretLogIstek_(e, kayit) {
+  try {
+    var ayarlar = ayarlariOku_();
+    if (!evetMi_(ayarlar['ZIYARET_LOG_AKTIF'])) {
+      return jsonpCevap_(e, { ok: true, log: 'kapali' });
+    }
 
-            if(data.notlar && data.notlar !== '0') {
-                var n = document.getElementById('panel-not');
-                n.textContent = data.notlar;
-                n.style.display = 'block';
-            }
+    trackingLogKaydet_(kayit.blok, kayit.daire);
+    return jsonpCevap_(e, { ok: true, log: 'yazildi' });
 
-            // Tablo Alanı
-            var tGovde = document.getElementById('tablo-govde');
-            tGovde.innerHTML = "";
-            data.tablo.forEach(function(satir) {
-                var tr = document.createElement('tr');
-                
-                var tdAy = document.createElement('td');
-                var strongAy = document.createElement('strong');
-                strongAy.textContent = satir.ay;
-                tdAy.appendChild(strongAy);
-                
-                var tdAidat = document.createElement('td');
-                tdAidat.className = satir.aidatClass;
-                tdAidat.textContent = temizleKurus(satir.aidatText);
-                
-                var tdEk = document.createElement('td');
-                tdEk.className = satir.ekClass;
-                tdEk.textContent = temizleKurus(satir.ekText);
-                
-                tr.appendChild(tdAy);
-                tr.appendChild(tdAidat);
-                tr.appendChild(tdEk);
-                tGovde.appendChild(tr);
-            });
+  } catch (err) {
+    Logger.log('Arka plan log hatası: ' + (err.stack || err.message));
+    // Log hatası paneli etkilememeli; HTML bu cevabı zaten kullanıcıya göstermez.
+    return jsonpCevap_(e, { ok: false, log: 'hata' });
+  }
+}
 
-            // Ödeme Bilgileri Alanı
-            var oGovde = document.getElementById('odeme-govde');
-            oGovde.innerHTML = "";
-            
-            oGovde.appendChild(paymentRowNode('Alıcı', data.odemeAlici, data.odemeAlici));
-            oGovde.appendChild(paymentRowNode('IBAN', data.odemeIban, ibanTemizleKopya(data.odemeIban)));
-            
-            if(data.toplamBorcRaw > 0) {
-                oGovde.appendChild(paymentRowNode('Tutar', toplamTemiz, sadeceRakam(data.toplamBorc)));
-            }
-            oGovde.appendChild(paymentRowNode('Açıklama', data.odemeAciklama, data.odemeAciklama));
 
-            // 💬 Google Sheets'ten Dinamik WhatsApp Numarası ve Akıllı Hazır Mesaj Entegrasyonu
-            var waDigits = data.whatsappNo.replace(/[^0-9]/g, '');
-            if(waDigits && waDigits !== '0' && waDigits.length >= 8) {
-                var waAlan = document.getElementById('whatsapp-alan');
-                var waLink = document.getElementById('whatsapp-link');
-                
-                // 🟢 Yeni isim/muhatap karmaşasını önleyen yalın ve net taslak:
-                var sakinMesaj = "Merhaba, ben " + data.blok + " · " + data.daire + " Nolu dairede oturuyorum. Panelden aidat ve borç durumumu inceledim, bir konuda bilgi almak istiyorum.";
-                
-                waLink.href = "https://wa.me/" + waDigits + "?text=" + encodeURIComponent(sakinMesaj);
-                waAlan.style.display = 'block';
-            }
+function sunucuIsitmaIstek_(e) {
+  var durum = {
+    ok: true,
+    ping: true,
+    warm: true,
+    hafif: true,
+    zaman: Utilities.formatDate(new Date(), 'Europe/Istanbul', 'yyyy-MM-dd HH:mm:ss')
+  };
 
-            document.getElementById('panel-guncelleme').textContent = "Son güncelleme: " + data.guncellemeTarihi + (cacheRender ? " · güncel kontrol ediliyor" : "");
-            document.getElementById('card').style.display = 'block';
+  // Dengeli hız modu: ağır şekilde tüm daireleri okumaz.
+  // Sadece Apps Script'i uyandırır ve AYARLAR cache'ini sıcak tutar.
+  // Böylece 5 dakikada bir tüm blok/daire verisi taranarak gereksiz kota ve süre harcanmaz.
+  try {
+    ayarlariOku_();
+    durum.ayarlarCache = 'ok';
+  } catch (err) {
+    durum.ok = false;
+    durum.warm = false;
+    durum.hata = 'ayarlar_cache_isitma_hatasi';
+    Logger.log('Hafif sunucu ısıtma hatası: ' + (err.stack || err.message));
+  }
 
-            // Panel kullanıcıya gösterildikten sonra ziyaret logunu yalnızca güncel sunucu cevabında arka planda yaz.
-            if(!cacheRender) setTimeout(logZiyaretiArkaPlandaGonder, 80);
-        }
+  return jsonpCevap_(e, durum);
+}
 
-        function logZiyaretiArkaPlandaGonder() {
-            if(ziyaretLogGonderildi || !panelKod) return;
-            ziyaretLogGonderildi = true;
+function callbackAdi_(e) {
+  var cb = (e && e.parameter && e.parameter.callback)
+           ? temizle_(e.parameter.callback)
+           : 'veriYukle';
 
-            var script = document.createElement('script');
-            script.src = GOOGLE_API_URL + '?mode=log&k=' + encodeURIComponent(panelKod) + '&callback=logYazildi&_t=' + Date.now();
-            script.async = true;
-            script.onerror = function() {
-                // Log hatası kullanıcı ekranını etkilemez.
-                try { script.remove(); } catch(e) {}
-            };
-            document.body.appendChild(script);
+  // JSONP callback adını geniş regex ile serbest bırakmak yerine beyaz liste uygula.
+  // Panel veri cevabı, arka plan log cevabı ve sunucu ısıtma ping cevabı dışında callback gerekmez.
+  var izinli = {
+    veriYukle: true,
+    logYazildi: true,
+    sunucuIsitildi: true
+  };
+  return izinli[cb] ? cb : 'veriYukle';
+}
 
-            setTimeout(function() {
-                try { script.remove(); } catch(e) {}
-            }, 15000);
-        }
+// =====================================================
+// TELEFON LİSTESİ HARİTALAMA
+// =====================================================
+function kisiMapAnahtari_(blok, daire) {
+  // TELEFON_LİSTESİ ile KISA_LINKLER arasında 01/1 ve a/A farklarını tolere eder.
+  return temizle_(blok).toUpperCase() + '_' + daireKey_(daire);
+}
 
-        function logYazildi(data) {
-            // Bilerek boş: log sonucu kullanıcıya gösterilmez, panel hızını etkilemez.
-        }
+function telefonListesiAnalizEt_(telSh) {
+  var sonuc = {
+    telMap: {},
+    satirlarByKey: {},
+    sorunlarByKey: {},
+    eksikTelefonlar: []
+  };
 
-        // 🔒 API'den beklenmeyen/eksik veri gelirse panelin kırılmasını önleyen güvenli veri katmanı
-        function guvenliMetin(deger, varsayilan) {
-            if(deger === undefined || deger === null) return varsayilan || '';
-            return String(deger);
-        }
+  if (!telSh || telSh.getLastRow() < 2) return sonuc;
 
-        function guvenliSayi(deger) {
-            var n = Number(deger);
-            return isFinite(n) ? n : 0;
-        }
+  var data = telSh.getRange(2, 1, telSh.getLastRow() - 1, 4).getValues();
+  for (var i = 0; i < data.length; i++) {
+    var row     = data[i];
+    var satirNo = i + 2;
+    var blok    = temizle_(row[0]);
+    var daire   = temizle_(row[1]);
+    var isim    = temizle_(row[2]);
+    var telRaw  = temizle_(row[3]);
 
-        function guvenliClass(deger) {
-            var v = guvenliMetin(deger, '').trim();
-            return (v === 'paid' || v === 'muted') ? v : '';
-        }
+    // Tamamen boş yedek satırlar rapora da işleme de alınmaz.
+    if (!blok && !daire && !isim && !telRaw) continue;
 
-        function guvenliPanelVerisi(data) {
-            data = data || {};
-            data.blok = guvenliMetin(data.blok, '-');
-            data.daire = guvenliMetin(data.daire, '-');
-            data.isim = guvenliMetin(data.isim, '-');
-            data.duyuru = guvenliMetin(data.duyuru, '');
-            data.etiketOdenen = guvenliMetin(data.etiketOdenen, 'ÖDENEN');
-            data.etiketBorc = guvenliMetin(data.etiketBorc, 'BORÇ');
-            data.etiketDevir = guvenliMetin(data.etiketDevir, 'DEVİR');
-            data.odenenYil = guvenliMetin(data.odenenYil, '0 TL');
-            data.borcYil = guvenliMetin(data.borcYil, '0 TL');
-            data.devir = guvenliMetin(data.devir, 'Borç yok');
-            data.toplamBorc = guvenliMetin(data.toplamBorc, 'Yok');
-            data.borcYilRaw = guvenliSayi(data.borcYilRaw);
-            data.devirRaw = guvenliSayi(data.devirRaw);
-            data.toplamBorcRaw = guvenliSayi(data.toplamBorcRaw);
-            data.notlar = guvenliMetin(data.notlar, '');
-            data.odemeAlici = guvenliMetin(data.odemeAlici, '-');
-            data.odemeIban = guvenliMetin(data.odemeIban, '-');
-            data.odemeAciklama = guvenliMetin(data.odemeAciklama, '-');
-            data.guncellemeTarihi = guvenliMetin(data.guncellemeTarihi, '-');
-            data.whatsappNo = guvenliMetin(data.whatsappNo, '');
+    // Blok/daire yoksa bu satır WhatsApp eşleşmesine giremez; burada sessizce atlanır.
+    if (!blok || !daire) continue;
 
-            if(!Array.isArray(data.tablo)) data.tablo = [];
-            data.tablo = data.tablo.map(function(satir) {
-                satir = satir || {};
-                return {
-                    ay: guvenliMetin(satir.ay, '-'),
-                    aidatText: guvenliMetin(satir.aidatText, '-'),
-                    aidatClass: guvenliClass(satir.aidatClass),
-                    ekText: guvenliMetin(satir.ekText, '-'),
-                    ekClass: guvenliClass(satir.ekClass)
-                };
-            });
-            return data;
-        }
+    var key = kisiMapAnahtari_(blok, daire);
+    if (!sonuc.satirlarByKey[key]) sonuc.satirlarByKey[key] = [];
+    sonuc.satirlarByKey[key].push({
+      satirNo: satirNo,
+      blok: blok,
+      daire: daire,
+      isim: isim,
+      telRaw: telRaw
+    });
 
-        // 🔒 XSS Güvenli Özet Kutusu Üretici
-        function createSummaryBox(label, val, className) {
-            var box = document.createElement('div');
-            box.className = 'box ' + className;
-            
-            var sm = document.createElement('span');
-            sm.className = 'small';
-            sm.textContent = label;
-            
-            var bg = document.createElement('span');
-            bg.className = 'big';
-            bg.textContent = val;
-            
-            box.appendChild(sm);
-            box.appendChild(bg);
-            return box;
-        }
+    var telNorm = telefonNormalize_(telRaw);
+    if (telNorm) {
+      if (!sonuc.telMap[key]) sonuc.telMap[key] = [];
+      sonuc.telMap[key].push({ isim: isim, tel: telNorm, satirNo: satirNo });
+      continue;
+    }
 
-        function paymentRowNode(label, val, copyVal) {
-            var row = document.createElement('div');
-            row.className = 'payment-row';
-            
-            var lblNode = document.createElement('div');
-            lblNode.className = 'payment-label';
-            lblNode.textContent = label;
-            
-            var valNode = document.createElement('div');
-            valNode.className = 'payment-value';
-            
-            var textNode = document.createElement('div');
-            textNode.className = 'payment-text';
-            textNode.textContent = val;
-            
-            var btn = document.createElement('button');
-            btn.className = 'copy-btn';
-            btn.textContent = 'Kopyala';
-            btn.setAttribute('data-copy', copyVal);
-            btn.onclick = function() { kopyaBtn(this); };
-            
-            valNode.appendChild(textNode);
-            valNode.appendChild(btn);
-            row.appendChild(lblNode);
-            row.appendChild(valNode);
-            return row;
-        }
+    if (!sonuc.sorunlarByKey[key]) sonuc.sorunlarByKey[key] = [];
+    sonuc.sorunlarByKey[key].push({
+      satirNo: satirNo,
+      blok: blok,
+      daire: daire,
+      isim: isim,
+      telRaw: telRaw,
+      sebep: telRaw ? 'Telefon geçersiz' : 'Telefon boş'
+    });
+  }
 
-        function hataKapat_() {
-            var e = document.getElementById('error');
-            if(e) {
-                e.innerHTML = '';
-                e.style.display = 'none';
-            }
-        }
+  // Önemli: Aynı blok-daire için başka bir satırda geçerli telefon varsa,
+  // yedek/boş satırlar rapora alınmaz. Böylece bilinçli tutulan yedek satırlar gürültü yapmaz.
+  for (var k in sonuc.sorunlarByKey) {
+    if (sonuc.telMap[k] && sonuc.telMap[k].length > 0) continue;
 
-        // 🔒 XSS Güvenli Hata Basma Fonksiyonu
-        function showError(title, msg) {
-            var loader = document.getElementById('loader-container');
-            if(loader) {
-                loader.style.opacity = '0';
-                loader.style.visibility = 'hidden';
-                setTimeout(function(){ loader.remove(); }, 500);
-            }
-            var card = document.getElementById('card');
-            if(card) card.style.display = 'none';
+    var sorunlar = sonuc.sorunlarByKey[k];
+    var ilk = sorunlar[0];
+    var isimler = benzersizListe_(sorunlar.map(function(s) { return s.isim; })).join(', ');
+    var satirlar = sorunlar.map(function(s) { return s.satirNo; }).join(', ');
+    var sebepler = benzersizListe_(sorunlar.map(function(s) { return s.sebep; })).join(' / ');
 
-            var e = document.getElementById('error');
-            e.innerHTML = '';
-            
-            var strong = document.createElement('strong');
-            strong.textContent = '⚠️ ' + title;
-            
-            var text = document.createTextNode(' ' + msg);
-            
-            e.appendChild(strong);
-            e.appendChild(text);
-            e.style.display = 'block';
-        }
+    sonuc.eksikTelefonlar.push({
+      blok: ilk.blok,
+      daire: ilk.daire,
+      isimler: isimler,
+      satirlar: satirlar,
+      sebep: sebepler
+    });
+  }
 
-        function kopyaBtn(btn){kopya(btn.getAttribute("data-copy")||"");}
-        function kopya(m){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(m).then(function(){toast("Kopyalandı");}).catch(function(){fallback(m);});}else{fallback(m);}}
-        function fallback(m){var e=document.createElement("textarea");e.value=m;e.style.position="fixed";e.style.opacity="0";document.body.appendChild(e);e.focus();e.select();try{document.execCommand("copy");toast("Kopyalandı");}catch(x){toast("Manuel kopyalayın");}document.body.removeChild(e);}
-        function toast(m){var t=document.getElementById("toast");t.textContent=m||"Kopyalandı";t.classList.add("show");setTimeout(function(){t.classList.remove("show");},1400);}
-    </script>
-</body>
-</html>
+  sonuc.eksikTelefonlar.sort(function(a, b) {
+    var ab = temizle_(a.blok).toUpperCase();
+    var bb = temizle_(b.blok).toUpperCase();
+    if (ab !== bb) return ab > bb ? 1 : -1;
+    var ad = daireKey_(a.daire);
+    var bd = daireKey_(b.daire);
+    var an = Number(ad), bn = Number(bd);
+    if (!isNaN(an) && !isNaN(bn)) return an - bn;
+    return ad > bd ? 1 : (ad < bd ? -1 : 0);
+  });
+
+  return sonuc;
+}
+
+function benzersizListe_(arr) {
+  var out = [];
+  var seen = {};
+  for (var i = 0; i < arr.length; i++) {
+    var v = temizle_(arr[i]);
+    if (!v || seen[v]) continue;
+    seen[v] = true;
+    out.push(v);
+  }
+  return out;
+}
+
+function telefonAtlamaBilgisi_(telAnaliz, key) {
+  var satirlar = (telAnaliz && telAnaliz.satirlarByKey && telAnaliz.satirlarByKey[key]) || [];
+  if (satirlar.length === 0) {
+    return { sebep: 'TELEFON_LİSTESİ içinde blok-daire kaydı yok', isimler: '', satirlar: '' };
+  }
+
+  var isimler = benzersizListe_(satirlar.map(function(s) { return s.isim; })).join(', ');
+  var satirNo = satirlar.map(function(s) { return s.satirNo; }).join(', ');
+  var sorunlar = (telAnaliz && telAnaliz.sorunlarByKey && telAnaliz.sorunlarByKey[key]) || [];
+  var sebepler = benzersizListe_(sorunlar.map(function(s) { return s.sebep; })).join(' / ');
+
+  return {
+    sebep: sebepler || 'Geçerli telefon bulunamadı',
+    isimler: isimler,
+    satirlar: satirNo
+  };
+}
+
+function telefonNormalize_(tel) {
+  var raw = temizle_(tel);
+  if (!raw) return null;
+
+  // WhatsApp wa.me formatı ülke kodu ile sadece rakam ister.
+  // Desteklenen örnekler:
+  // Türkiye: 05391234567, 5391234567, 905391234567, +905391234567, 00905391234567
+  // Yurt dışı: +491701234567, 00491701234567, 447700900123, 2125556677
+  var digits = raw.replace(/\D/g, '');
+  if (!digits) return null;
+
+  // 00 ile başlayan uluslararası formatı ülke kodlu formata çevir.
+  // Örn: 0049... -> 49..., 0090... -> 90...
+  if (digits.indexOf('00') === 0) digits = digits.substring(2);
+
+  // Türkiye yerel GSM formatları.
+  if (/^05\d{9}$/.test(digits)) digits = '90' + digits.substring(1);
+  else if (/^5\d{9}$/.test(digits)) digits = '90' + digits;
+
+  // 0 ile başlayıp 00 olmayan numaralar ülke kodsuz yerel format olabilir.
+  // Yurt dışı numaralar için ülke kodu zorunlu tutulur; aksi halde WhatsApp linki güvenilir olmaz.
+  if (digits.indexOf('0') === 0) return null;
+
+  // E.164 mantığı: ülke kodu dahil en fazla 15 rakam. Alt sınırı esnek tutuyoruz.
+  // Böylece TR dışı numaralar da çalışır, ama çok kısa/çok uzun hatalı girişler rapora düşer.
+  if (!/^\d{8,15}$/.test(digits)) return null;
+
+  return digits;
+}
+
+// =====================================================
+// WHATSAPP — SEKMEYİ GÜNCELLE
+// =====================================================
+function whatsappSekmesiniGuncelle() {
+  // Eski ayrı güncelleme işlemi kapalı tutulur. Tek güvenli işlem:
+  // 📱 WhatsApp Linklerini Oluştur. Bu işlem TELEFON_LİSTESİ sekmesini yalnızca okur,
+  // WHATSAPP_MESAJLARI sekmesini ise güncel çıktı için yeniler.
+  SpreadsheetApp.getUi().alert(
+    '⚠️ Bu eski işlem devre dışı.\n' +
+    'Güncel WhatsApp çıktısı için 📱 WhatsApp Linklerini Oluştur menüsünü kullanın.\n' +
+    'Not: TELEFON_LİSTESİ sekmesine yazma/silme yapılmaz.'
+  );
+}
+
+// =====================================================
+// WHATSAPP — LİNK OLUŞTUR
+// =====================================================
+function whatsappLinkleriniOlustur() {
+  var ui      = SpreadsheetApp.getUi();
+  var ayarlar = ayarlariOku_();
+  var V       = varsayilanlar_();
+  var sablon  = temizle_(ayarlar['WA_MESAJ_SABLON']) || V.WA_MESAJ_SABLON;
+  var webUrl  = temizle_(ayarlar['WEB_APP_URL']);
+  if (!webUrl) {
+    ui.alert('⚠️ AYARLAR sekmesinde WEB_APP_URL tanımlı değil.'); return;
+  }
+
+  var linkSs = linkDosyasi_();
+  var linkSh = linkSs.getSheetByName(LINK_SHEET_ADI);
+  var telSh  = linkSs.getSheetByName(TELEFON_SHEET_ADI);
+  var waSh   = linkSs.getSheetByName(WHATSAPP_MESAJLARI_SHEET_ADI);
+
+  if (!linkSh || linkSh.getLastRow() < 2) {
+    ui.alert('❌ KISA_LINKLER sekmesi boş veya bulunamadı.'); return;
+  }
+  if (!telSh || telSh.getLastRow() < 2) {
+    ui.alert('❌ TELEFON_LİSTESİ sekmesi boş veya bulunamadı.'); return;
+  }
+  if (!waSh) waSh = linkSs.insertSheet(WHATSAPP_MESAJLARI_SHEET_ADI);
+
+  var linkData    = linkSh.getRange(2, 1, linkSh.getLastRow() - 1, 6).getValues();
+  var telAnaliz   = telefonListesiAnalizEt_(telSh);
+  var telMap      = telAnaliz.telMap;
+  var anaSS       = anaDosyasi_();
+  var blokCache   = {};
+  var tumSatirlar = [];
+  var telefonAtlananAktifLinkler = [];
+  var mevcutYil   = temizle_(ayarlar['YIL']) || V.YIL;
+
+  for (var i = 0; i < linkData.length; i++) {
+    var satir = linkData[i];
+    var kod   = temizle_(satir[0]);
+    var blok  = temizle_(satir[1]);
+    var daire = temizle_(satir[2]);
+    var durum = satir.length >= 6
+                ? temizle_(String(satir[5])).toUpperCase()
+                : 'AKTIF';
+
+    if (!kod || !blok || !daire || durum === 'PASIF') continue;
+
+    var key = kisiMapAnahtari_(blok, daire);
+    var kisiler = telMap[key] || [];
+    if (kisiler.length === 0) {
+      var atlama = telefonAtlamaBilgisi_(telAnaliz, key);
+      telefonAtlananAktifLinkler.push([
+        kod, blok, daire, atlama.sebep, atlama.isimler, atlama.satirlar
+      ]);
+      continue;
+    }
+
+    var blokCacheKey = temizle_(blok).toUpperCase();
+    if (blokCache[blokCacheKey] === undefined) {
+      try {
+        var blokSh = sheetByNameEsnek_(anaSS, blok);
+        blokCache[blokCacheKey] = blokSh ? blokSh.getDataRange().getValues() : null;
+      } catch (e) {
+        Logger.log('Blok okunamadı: ' + blok + ' — ' + e.message);
+        blokCache[blokCacheKey] = null;
+      }
+    }
+
+    if (!blokCache[blokCacheKey]) {
+      Logger.log('Atlandı (blok bulunamadı): ' + blok + ' ' + daire);
+      continue;
+    }
+
+    var ham = daireSatiriBul_(blokCache[blokCacheKey], daire);
+    if (!ham) {
+      Logger.log('Atlandı (daire satırı yok): ' + blok + ' ' + daire);
+      continue;
+    }
+
+    var ayV        = ayVerileriOlustur_(ham.veri1, ham.veri2, ayarlar);
+    var ozet       = ozetHesapla_(ayV, sayiYap_(ham.veri1[COL_DEVIR]));
+    var toplamBorc = ozet.borcYil + ozet.devir;
+    var borcStr    = paraFormatla_(toplamBorc);
+
+    var yilNum       = Number(mevcutYil);
+    var oncekiYilMetni = isNaN(yilNum)
+      ? 'Geçmiş yıldan'
+      : (yilNum - 1) + ' yılından';
+
+    var devirMsg   = ozet.devir > 0
+      ? oncekiYilMetni + ' kalan borcunuz: ' + paraFormatla_(ozet.devir)
+      : '';
+    var yilBorcMsg = ozet.borcYil > 0
+      ? mevcutYil + ' yılı aidat borcunuz: ' + paraFormatla_(ozet.borcYil)
+      : '';
+
+    for (var j = 0; j < kisiler.length; j++) {
+      var kisi = kisiler[j];
+      var tel  = telefonNormalize_(kisi.tel);
+      if (!tel) continue;
+
+      var mesaj = sablon
+        .replace(/\{ISIM\}/g,               kisi.isim || '-')
+        .replace(/\{BLOK\}/g,               blok)
+        .replace(/\{DAIRE\}/g,              daire)
+        .replace(/\{LINK\}/g,               webUrl + '?k=' + encodeURIComponent(kod))
+        .replace(/\{TOPLAM_BORC\}/g,        borcStr)
+        .replace(/\{YIL\}/g,                mevcutYil)
+        .replace(/\{TARIH\}/g,              Utilities.formatDate(
+                                              new Date(), 'Europe/Istanbul', 'dd.MM.yyyy'))
+        .replace(/\{DEVIR_BORC_MESSAGE\}/g, devirMsg)
+        .replace(/\{YIL_BORC_MESSAGE\}/g,   yilBorcMsg);
+
+      var tamWaLink = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(mesaj);
+      tumSatirlar.push([
+        kod, blok, daire, kisi.isim || '', tel,
+        '=HYPERLINK("' + tamWaLink + '";"Mesaj Gönder")'
+      ]);
+    }
+  }
+
+  var telefonRaporAdi = telefonEksikRaporuYaz_(
+    linkSs,
+    telefonAtlananAktifLinkler,
+    telAnaliz.eksikTelefonlar
+  );
+
+  if (tumSatirlar.length === 0) {
+    ui.alert('⚠️ Oluşturulacak WhatsApp linki bulunamadı.\n' +
+             'Kontrol edin: KISA_LINKLER aktif kayıtları, TELEFON_LİSTESİ blok/daire eşleşmeleri ve ANA_DOSYA blok sekmeleri.\n\n' +
+             '📋 Telefon kontrol raporu: ' + telefonRaporAdi + ' sekmesi');
+    return;
+  }
+
+  // v3.8.0: WHATSAPP_MESAJLARI sekmesi güncel çıktı için temizlenir ve yeniden yazılır.
+  // TELEFON_LİSTESİ sekmesine kesinlikle yazma/silme yapılmaz; yalnızca yukarıda okunmuştur.
+  var tarihEtiketi = Utilities.formatDate(new Date(), 'Europe/Istanbul', 'dd.MM_HH.mm');
+  var yazim = whatsappLinkleriniGuncelYaz_(waSh, tumSatirlar, tarihEtiketi);
+
+  waSh.autoResizeColumns(1, 6);
+
+  var raporMesaji = '\n\n📋 Telefon kontrol raporu: ' + telefonRaporAdi + ' sekmesi';
+  if (telefonAtlananAktifLinkler.length > 0 || telAnaliz.eksikTelefonlar.length > 0) {
+    raporMesaji += '\n⚠️ Aktif linkte telefonu olmadığı/geçersiz olduğu için atlanan daire: ' +
+                   telefonAtlananAktifLinkler.length;
+    raporMesaji += '\n⚠️ TELEFON_LİSTESİ içinde telefonsuz/geçersiz blok-daire: ' +
+                   telAnaliz.eksikTelefonlar.length;
+  } else {
+    raporMesaji += '\n✅ Telefon eksiği görünmüyor.';
+  }
+
+  ui.alert('✅ İşlem tamam! Dinamik borç mesajları ile ' +
+           tumSatirlar.length + ' adet WhatsApp linki oluşturuldu.\n' +
+           'WHATSAPP_MESAJLARI sekmesindeki eski WhatsApp çıktısı temizlendi ve güncel liste yeniden yazıldı.\n' +
+           'TELEFON_LİSTESİ sekmesine dokunulmadı; yalnızca okundu.\n' +
+           'Güncel çıktı ' + yazim.baslangicA1 + ':' + yazim.bitisA1 +
+           ' aralığına yazıldı.' + raporMesaji);
+}
+
+
+function telefonEksikRaporuYaz_(ss, aktifAtlanan, listeEksik) {
+  var sh = ss.getSheetByName(TELEFON_EKSIK_RAPOR_ADI);
+  if (!sh) sh = ss.insertSheet(TELEFON_EKSIK_RAPOR_ADI);
+
+  // Bu sekme sistem raporudur; her çalıştırmada güncel durumu göstermek için yenilenir.
+  // Önce eski birleştirilmiş hücreleri ayırır; sonra yalnızca bu rapor sekmesini temizler.
+  try { sh.getRange(1, 1, sh.getMaxRows(), sh.getMaxColumns()).breakApart(); } catch (e) {}
+  sh.clearContents();
+  sh.clearFormats();
+
+  var simdi = Utilities.formatDate(new Date(), 'Europe/Istanbul', 'dd.MM.yyyy HH:mm:ss');
+  sh.getRange(1, 1, 1, 6).merge();
+  sh.getRange(1, 1).setValue('TELEFON EKSİK / GEÇERSİZ RAPORU')
+    .setFontWeight('bold').setFontSize(13).setBackground('#07111f').setFontColor('#f4d47c');
+  sh.getRange(2, 1, 1, 6).merge();
+  sh.getRange(2, 1).setValue('Son kontrol: ' + simdi);
+
+  var r = 4;
+  sh.getRange(r, 1, 1, 6).merge();
+  sh.getRange(r, 1).setValue('AKTİF KISA_LINKLER İÇİN WHATSAPP LİNKİ ÜRETİLEMEYENLER')
+    .setFontWeight('bold').setBackground('#fff7ed');
+  r++;
+
+  sh.getRange(r, 1, 1, 6).setValues([[
+    'KOD', 'BLOK', 'DAİRE', 'SEBEP', 'İSİM/LER', 'TELEFON_LİSTESİ SATIR/LAR'
+  ]]).setFontWeight('bold').setBackground('#e5e7eb');
+  r++;
+
+  if (aktifAtlanan && aktifAtlanan.length > 0) {
+    sh.getRange(r, 1, aktifAtlanan.length, 6).setValues(aktifAtlanan);
+    r += aktifAtlanan.length;
+  } else {
+    sh.getRange(r, 1, 1, 6).merge();
+    sh.getRange(r, 1).setValue('Aktif linkler içinde telefonu eksik/geçersiz olduğu için atlanan daire yok.');
+    r++;
+  }
+
+  r += 2;
+  sh.getRange(r, 1, 1, 5).merge();
+  sh.getRange(r, 1).setValue('TELEFON_LİSTESİ İÇİNDE GEÇERLİ TELEFONU OLMAYAN BLOK-DAİRELER')
+    .setFontWeight('bold').setBackground('#fff1f2');
+  r++;
+
+  sh.getRange(r, 1, 1, 5).setValues([[
+    'BLOK', 'DAİRE', 'İSİM/LER', 'TELEFON_LİSTESİ SATIR/LAR', 'SEBEP'
+  ]]).setFontWeight('bold').setBackground('#e5e7eb');
+  r++;
+
+  if (listeEksik && listeEksik.length > 0) {
+    var rows = listeEksik.map(function(x) {
+      return [x.blok, x.daire, x.isimler, x.satirlar, x.sebep];
+    });
+    sh.getRange(r, 1, rows.length, 5).setValues(rows);
+    r += rows.length;
+  } else {
+    sh.getRange(r, 1, 1, 5).merge();
+    sh.getRange(r, 1).setValue('TELEFON_LİSTESİ içinde geçerli telefonu olmayan blok-daire görünmüyor.');
+    r++;
+  }
+
+  sh.setFrozenRows(2);
+  sh.autoResizeColumns(1, 6);
+  return TELEFON_EKSIK_RAPOR_ADI;
+}
+
+
+function whatsappLinkleriniGuncelYaz_(waSh, tumSatirlar, tarihEtiketi) {
+  if (!waSh) throw new Error('WHATSAPP_MESAJLARI sekmesi bulunamadı.');
+  if (!tumSatirlar || tumSatirlar.length === 0) throw new Error('Yazılacak WhatsApp linki yok.');
+
+  var basliklar = [
+    'KOD', 'BLOK', 'DAIRE', 'ISIM', 'TELEFON', 'WA_' + tarihEtiketi
+  ];
+  var gerekliKolon = basliklar.length;
+  var gerekliSatir = tumSatirlar.length + 1;
+
+  // Yalnızca WHATSAPP_MESAJLARI sekmesi temizlenir ve güncel tablo boyutuna küçültülür.
+  // TELEFON_LİSTESİ sekmesine burada veya başka bir WhatsApp yazım adımında dokunulmaz.
+  try {
+    waSh.getRange(1, 1, waSh.getMaxRows(), waSh.getMaxColumns()).breakApart();
+  } catch (e) {}
+  waSh.clearContents();
+  waSh.clearFormats();
+
+  // Dosya şişmesini önlemek için eski sağdaki WA arşiv sütunları bu sekmeden kaldırılır.
+  if (waSh.getMaxColumns() < gerekliKolon) {
+    waSh.insertColumnsAfter(waSh.getMaxColumns(), gerekliKolon - waSh.getMaxColumns());
+  } else if (waSh.getMaxColumns() > gerekliKolon) {
+    waSh.deleteColumns(gerekliKolon + 1, waSh.getMaxColumns() - gerekliKolon);
+  }
+
+  // Gereksiz fazla satırlar da bu sekmede temizlenir; en az 2 satır bırakılır.
+  var hedefSatir = Math.max(gerekliSatir, 2);
+  if (waSh.getMaxRows() < hedefSatir) {
+    waSh.insertRowsAfter(waSh.getMaxRows(), hedefSatir - waSh.getMaxRows());
+  } else if (waSh.getMaxRows() > hedefSatir) {
+    waSh.deleteRows(hedefSatir + 1, waSh.getMaxRows() - hedefSatir);
+  }
+
+  waSh.getRange(1, 1, 1, gerekliKolon).setValues([basliklar]);
+  waSh.getRange(1, 1, 1, gerekliKolon)
+      .setFontWeight('bold')
+      .setBackground('#07111f')
+      .setFontColor('#f4d47c');
+  waSh.setFrozenRows(1);
+
+  var kimlikVerileri = [];
+  var formuller = [];
+  for (var i = 0; i < tumSatirlar.length; i++) {
+    kimlikVerileri.push(tumSatirlar[i].slice(0, 5));
+    formuller.push([tumSatirlar[i][5]]);
+  }
+
+  waSh.getRange(2, 1, kimlikVerileri.length, 5).setValues(kimlikVerileri);
+  waSh.getRange(2, 6, formuller.length, 1).setFormulas(formuller);
+
+  return {
+    baslangicKol: 1,
+    bitisKol: gerekliKolon,
+    baslangicA1: 'A',
+    bitisA1: 'F'
+  };
+}
+
+
+// =====================================================
+// VERİ MODELI
+// =====================================================
+function buYil_() {
+  if (_YIL === null) _YIL = new Date().getFullYear();
+  return _YIL;
+}
+
+function varsayilanlar_() {
+  if (_VARSAYILANLAR_CACHE) return _VARSAYILANLAR_CACHE;
+  var y = buYil_();
+  _VARSAYILANLAR_CACHE = {
+    DUYURU_METNI    : 'Aidat bilgilerinizi ve ödeme detaylarınızı bu ekrandan güncel olarak takip edebilirsiniz.',
+    YIL             : String(y),
+    DEVIR_ETIKETI   : String(y - 1) + ' KALAN',
+    ODENEN_ETIKETI  : String(y) + ' ÖDENEN',
+    BORC_ETIKETI    : String(y) + ' BORCU',
+    YONETIM_WHATSAPP: '',
+    WEB_APP_URL     : '',
+    APPS_SCRIPT_URL : '',
+    ZIYARET_LOG_AKTIF: 'EVET',
+    WA_MESAJ_SABLON : 'Merhaba {ISIM} 👋\n\n{BLOK} {DAIRE} No aidat bilgilerinize aşağıdaki linkten ulaşabilirsiniz.\n\n📋 Kişisel Aidat Paneliniz:\n{LINK}\n\n💰 Toplam Borcunuz: {TOPLAM_BORC}\n\nLütfen ödemelerinizi geciktirmeyiniz.\n\n{TARIH}\nAykent Site Yönetimi'
+  };
+  return _VARSAYILANLAR_CACHE;
+}
+
+function ayVerileriOlustur_(v1, v2, ayarlar) {
+  var out = [];
+  for (var i = 0; i < 12; i++) {
+    var raw1 = v1[COL_AY + i];
+    var raw2 = v2[COL_AY + i];
+    out.push({
+      ad            : AYLAR[i],
+      raw1          : raw1,
+      raw2          : raw2,
+      odeme1        : muafMi_(raw1) ? 0 : sayiYap_(raw1),
+      odeme2        : muafMi_(raw2) ? 0 : sayiYap_(raw2),
+      beklenenAidat : muafMi_(raw1) ? 0 : sayiYap_(ayarlar[AYAR_AIDAT_KEYS[i]])
+    });
+  }
+  return out;
+}
+
+function ozetHesapla_(ayVerileri, devir) {
+  var bugunAy     = new Date().getMonth();
+  var odenenYil   = 0;
+  var beklenenYil = 0;
+  for (var i = 0; i < ayVerileri.length; i++) {
+    odenenYil += ayVerileri[i].odeme1 + ayVerileri[i].odeme2;
+    if (i <= bugunAy) beklenenYil += ayVerileri[i].beklenenAidat;
+  }
+  return {
+    odenenYil : odenenYil,
+    borcYil   : Math.max(0, beklenenYil - odenenYil),
+    devir     : devir
+  };
+}
+
+function notlariOlustur_(v1, v2) {
+  var n1  = temizle_(v1[COL_NOTLAR]);
+  var n2  = temizle_(v2[COL_NOTLAR]);
+  var arr = [];
+  if (n1 && n1 !== '0') arr.push(n1);
+  if (n2 && n2 !== '0' && n2 !== n1) arr.push(n2);
+  return arr.join('\n');
+}
+
+function odemeText_(v) {
+  if (muafMi_(v)) return 'Muaf';
+  var n = sayiYap_(v);
+  return n === 0 ? '-' : paraFormatla_(n);
+}
+
+function odemeClass_(v) {
+  return muafMi_(v) ? 'muted' : (sayiYap_(v) > 0 ? 'paid' : '');
+}
+
+// =====================================================
+// AYARLAR
+// =====================================================
+function ayarlariOku_() {
+  var cache  = CacheService.getScriptCache();
+  var ayarlarCacheKey = cacheKeyTam_('ayarlar_v1');
+  var cached = cache.get(ayarlarCacheKey);
+  if (cached) {
+    try { return JSON.parse(cached); } catch (e) { cache.remove(ayarlarCacheKey); }
+  }
+  var ayarlar = ayarlariSheetstenOku_();
+  try { cache.put(ayarlarCacheKey, JSON.stringify(ayarlar), AYARLAR_CACHE_SURE); } catch (e) {}
+  return ayarlar;
+}
+
+function ayarlariSheetstenOku_() {
+  var V        = varsayilanlar_();
+  var defaults = {
+    DUYURU_METNI    : V.DUYURU_METNI,
+    YIL             : V.YIL,
+    DEVIR_ETIKETI   : V.DEVIR_ETIKETI,
+    ODENEN_ETIKETI  : V.ODENEN_ETIKETI,
+    BORC_ETIKETI    : V.BORC_ETIKETI,
+    YONETIM_WHATSAPP: V.YONETIM_WHATSAPP,
+    WEB_APP_URL     : V.WEB_APP_URL,
+    APPS_SCRIPT_URL : V.APPS_SCRIPT_URL,
+    ZIYARET_LOG_AKTIF: V.ZIYARET_LOG_AKTIF,
+    WA_MESAJ_SABLON : V.WA_MESAJ_SABLON
+  };
+  for (var i = 0; i < AYAR_AIDAT_KEYS.length; i++) {
+    defaults[AYAR_AIDAT_KEYS[i]] = 800;
+  }
+  try {
+    var sh = anaDosyasi_().getSheetByName(AYARLAR_SHEET_ADI);
+    if (sh && sh.getLastRow() >= 1) {
+      // Sadece ilk 2 sütunu oku (AYAR_ADI ve DEGER), 3. sütun AÇIKLAMA okunmaz
+      sh.getRange(1, 1, sh.getLastRow(), 2).getValues().forEach(function(r) {
+        var key = temizle_(r[0]).toUpperCase();
+        if (key) defaults[key] = r[1];
+      });
+    }
+  } catch (e) {
+    Logger.log('AYARLAR okunamadı: ' + e.message);
+  }
+  for (var j = 0; j < AYAR_AIDAT_KEYS.length; j++) {
+    defaults[AYAR_AIDAT_KEYS[j]] = sayiYap_(defaults[AYAR_AIDAT_KEYS[j]]);
+  }
+  return defaults;
+}
+
+// YENİ v3.7.1: AÇIKLAMA sütunu eklendi, setValues 3 sütuna düzeltildi
+function ayarlarSekmesiniOlustur() {
+  var ss = anaDosyasi_();
+  var sh = ss.getSheetByName(AYARLAR_SHEET_ADI);
+  if (!sh) {
+    sh = ss.insertSheet(AYARLAR_SHEET_ADI);
+    sh.getRange(1, 1, 1, 3).setValues([['AYAR_ADI', 'DEGER', 'AÇIKLAMA']]);
+    sh.getRange(1, 1, 1, 3)
+      .setFontWeight('bold').setBackground('#07111f').setFontColor('#f4d47c');
+    sh.setFrozenRows(1);
+  } else {
+    // Mevcut sekme varsa başlık satırını 3 sütuna genişlet
+    sh.getRange(1, 3).setValue('AÇIKLAMA')
+      .setFontWeight('bold').setBackground('#07111f').setFontColor('#f4d47c');
+  }
+
+  var V      = varsayilanlar_();
+  var mevcut = {};
+  if (sh.getLastRow() >= 2) {
+    sh.getRange(2, 1, sh.getLastRow() - 1, 2).getValues().forEach(function(r) {
+      var k = temizle_(r[0]).toUpperCase();
+      if (k) mevcut[k] = r[1];
+    });
+  }
+
+  var rows = [];
+  var aciklamaMap = {};
+  // YENİ: ekle fonksiyonu 3. parametre olarak açıklama alıyor.
+  // Mevcut AYAR değerlerine dokunulmaz; sadece açıklama sütunu güncellenebilir.
+  function ekle(k, v, a) {
+    aciklamaMap[k] = a || '';
+    if (mevcut[k] === undefined) rows.push([k, v, a || '']);
+  }
+
+  ekle('WEB_APP_URL',      '',                  'WhatsApp mesajında gönderilecek GitHub HTML panel adresi. Örn: https://aykentsitesi.github.io/aidat/');
+  ekle('APPS_SCRIPT_URL',  '',                  'İsteğe bağlı: Apps Script Web App /exec URL adresi. Sunucu ısıtma için otomatik URL bulunamazsa kullanılır.');
+  ekle('YIL',              V.YIL,               'Aktif aidat yılı. Yıl sonunda: 1) Bu değeri artır 2) AIDAT tutarlarını güncelle 3) Ana veri dosyasını yedekle 4) Önbelleği temizle. Örn: 2027');
+  ekle('DUYURU_METNI',     V.DUYURU_METNI,      'Panelin üstünde çıkan duyuru yazısı. Boş bırakılabilir.');
+  ekle('ODENEN_ETIKETI',   V.ODENEN_ETIKETI,    'Ödenen kutusu başlığı. Örn: 2026 ÖDENEN');
+  ekle('BORC_ETIKETI',     V.BORC_ETIKETI,      'Borç kutusu başlığı. Örn: 2026 BORCU');
+  ekle('DEVIR_ETIKETI',    V.DEVIR_ETIKETI,     'Devir kutusu başlığı. Örn: 2025 KALAN');
+  ekle('YONETIM_WHATSAPP', '905393431533',       'Yönetici WhatsApp numarası. Türkiye için 905..., yurt dışı için ülke koduyla yaz. Örn: 905391234567 veya +491701234567');
+  ekle('ZIYARET_LOG_AKTIF', V.ZIYARET_LOG_AKTIF, 'EVET ise ziyaretler kaydedilir. v3.8.3 ile log arka planda yazılır; panel açılışını bekletmez. Kapatmak için HAYIR yaz.');
+  ekle('WA_MESAJ_SABLON',  V.WA_MESAJ_SABLON,   'WhatsApp toplu mesaj şablonu. Kullanılabilir değişkenler: {ISIM} {BLOK} {DAIRE} {LINK} {TOPLAM_BORC} {YIL} {TARIH} {DEVIR_BORC_MESSAGE} {YIL_BORC_MESSAGE}.');
+
+  var ayAciklamalari = [
+    'Ocak ayı aidat tutarı (TL olarak sadece rakam gir)',
+    'Şubat ayı aidat tutarı',
+    'Mart ayı aidat tutarı',
+    'Nisan ayı aidat tutarı',
+    'Mayıs ayı aidat tutarı',
+    'Haziran ayı aidat tutarı',
+    'Temmuz ayı aidat tutarı',
+    'Ağustos ayı aidat tutarı',
+    'Eylül ayı aidat tutarı',
+    'Ekim ayı aidat tutarı',
+    'Kasım ayı aidat tutarı',
+    'Aralık ayı aidat tutarı'
+  ];
+  for (var i = 0; i < AYAR_AIDAT_KEYS.length; i++) {
+    ekle(AYAR_AIDAT_KEYS[i], 800, ayAciklamalari[i]);
+  }
+
+  if (rows.length > 0) {
+    // DÜZELTİLDİ: sütun sayısı 3 (AYAR_ADI, DEGER, AÇIKLAMA)
+    sh.getRange(sh.getLastRow() + 1, 1, rows.length, 3).setValues(rows);
+  }
+
+  // Mevcut ayar satırlarında DEGER sütununa dokunmadan yalnızca AÇIKLAMA sütununu güncelle.
+  // Böylece eski kurulumlarda yeni yardım metinleri görünür, yönetici ayarları bozulmaz.
+  var aciklamaGuncellenen = 0;
+  if (sh.getLastRow() >= 2) {
+    var aciklamaAralik = sh.getRange(2, 1, sh.getLastRow() - 1, 3);
+    var aciklamaVerileri = aciklamaAralik.getValues();
+    var aciklamaDegisti = false;
+    for (var a = 0; a < aciklamaVerileri.length; a++) {
+      var keyA = temizle_(aciklamaVerileri[a][0]).toUpperCase();
+      if (keyA && aciklamaMap[keyA] !== undefined && temizle_(aciklamaVerileri[a][2]) !== aciklamaMap[keyA]) {
+        aciklamaVerileri[a][2] = aciklamaMap[keyA];
+        aciklamaDegisti = true;
+        aciklamaGuncellenen++;
+      }
+    }
+    if (aciklamaDegisti) aciklamaAralik.setValues(aciklamaVerileri);
+  }
+
+  sh.autoResizeColumns(1, 3);
+  SpreadsheetApp.getUi().alert(
+    '🔧 AYARLAR sekmesi kontrol edildi.\n' +
+    (rows.length > 0 ? rows.length + ' yeni satır eklendi.\n' : 'Tüm ayarlar zaten mevcuttu.\n') +
+    (aciklamaGuncellenen > 0 ? aciklamaGuncellenen + ' açıklama güncellendi.' : 'Açıklamalar güncel.')
+  );
+}
+
+function cacheTumunuTemizle() {
+  var cache = CacheService.getScriptCache();
+
+  // CacheService tekil anahtarları listeleyemediği için en güvenli yöntem:
+  // namespace versiyonunu değiştir. Böylece eski tekil daire/kod cacheleri de artık okunmaz.
+  cacheVersiyonunuYenile_();
+
+  var keys = ['ayarlar_v1', 'kod_map_v2'].map(cacheKeyTam_);
+
+  try {
+    anaDosyasi_().getSheets().forEach(function(sh) {
+      keys.push(cacheKeyTam_(blokSatirMapCacheKey_(sh.getName())));
+    });
+  } catch (e) {}
+
+  try { cache.removeAll(keys); } catch (e1) {
+    keys.forEach(function(k) { try { cache.remove(k); } catch (e2) {} });
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Önbellek temizlendi ve cache versiyonu yenilendi.\n' +
+    'Not: Daire verileri 5 dk, link kodları 5 dk, kısa link haritası 10 dk, blok satır indeksleri 60 dk cachelenir.\n' +
+    'PASIF link veya ödeme değişikliğini hemen görmek için bu menüyü kullanmanız yeterlidir.'
+  );
+}
+
+function jsonHazirVeriKalintilariniTemizle() {
+  var silinen = hazirPanelTriggerKaldir_(true);
+  cacheTumunuTemizleSessiz_();
+  SpreadsheetApp.getUi().alert(
+    '✅ JSON/Hazır Veri modu iptal kalıntıları temizlendi.\n' +
+    'Silinen otomatik hazır veri tetikleyicisi: ' + silinen + '\n\n' +
+    'Panel artık hazır JSON yayınına bakmaz; canlı Apps Script + agresif cache akışıyla çalışır.'
+  );
+}
+
+function cacheTumunuTemizleSessiz_() {
+  var cache = CacheService.getScriptCache();
+  cacheVersiyonunuYenile_();
+  var keys = ['ayarlar_v1', 'kod_map_v2', 'hazir_panel_manifest_v1'].map(cacheKeyTam_);
+  try {
+    anaDosyasi_().getSheets().forEach(function(sh) {
+      keys.push(cacheKeyTam_(blokSatirMapCacheKey_(sh.getName())));
+    });
+  } catch (e) {}
+  try { cache.removeAll(keys); } catch (e1) {
+    keys.forEach(function(k) { try { cache.remove(k); } catch (e2) {} });
+  }
+}
+
+function hazirPanelTriggerKaldir_(sessiz) {
+  var triggers = ScriptApp.getProjectTriggers();
+  var silinen = 0;
+  for (var i = 0; i < triggers.length; i++) {
+    try {
+      if (triggers[i].getHandlerFunction && triggers[i].getHandlerFunction() === 'hazirPanelVerileriniYayinlaOtomatik') {
+        ScriptApp.deleteTrigger(triggers[i]);
+        silinen++;
+      }
+    } catch (e) {}
+  }
+  return silinen;
+}
+
+// v3.8.11'den kalmış otomatik tetikleyici çalışırsa veri yayınlamaz; kendini temizler.
+function hazirPanelVerileriniYayinlaOtomatik() {
+  hazirPanelTriggerKaldir_(true);
+}
+
+// =====================================================
+// HIZ — SUNUCU ISITMA
+// =====================================================
+function sunucuIsitmaTriggerKur() {
+  sunucuIsitmaTriggerKaldir_(true);
+
+  ScriptApp.newTrigger('sunucuyuIsit_')
+    .timeBased()
+    .everyMinutes(10)
+    .create();
+
+  SpreadsheetApp.getUi().alert(
+    '🔥 Dengeli sunucu ısıtma kuruldu.\n' +
+    'Her 10 dakikada bir hafif ping atılır ve AYARLAR cache’i sıcak tutulur.\n\n' +
+    'Not: Tüm daireler önden okunmaz; bu sayede gereksiz kota ve çalışma süresi harcanmaz.'
+  );
+}
+
+function sunucuIsitmaTriggerKaldir() {
+  var adet = sunucuIsitmaTriggerKaldir_(true);
+  SpreadsheetApp.getUi().alert(
+    adet > 0
+      ? '🧊 Sunucu ısıtma kaldırıldı. Silinen tetikleyici: ' + adet
+      : 'ℹ️ Kaldırılacak sunucu ısıtma tetikleyicisi bulunamadı.'
+  );
+}
+
+function sunucuIsitmaTriggerKaldir_(sessiz) {
+  var triggers = ScriptApp.getProjectTriggers();
+  var silinen = 0;
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction && triggers[i].getHandlerFunction() === 'sunucuyuIsit_') {
+      ScriptApp.deleteTrigger(triggers[i]);
+      silinen++;
+    }
+  }
+  if (!sessiz && silinen > 0) Logger.log('Silinen sunucu ısıtma tetikleyicisi: ' + silinen);
+  return silinen;
+}
+
+function sunucuyuIsit_() {
+  var url = '';
+
+  try {
+    url = temizle_(ScriptApp.getService().getUrl());
+  } catch (e1) {
+    url = '';
+  }
+
+  if (!url) {
+    try {
+      var ayarlar = ayarlariOku_();
+      url = temizle_(ayarlar['APPS_SCRIPT_URL'] || ayarlar['GOOGLE_API_URL'] || '');
+    } catch (e2) {
+      url = '';
+    }
+  }
+
+  if (!url || url.indexOf('/exec') === -1) {
+    Logger.log('Sunucu ısıtma atlandı: Apps Script /exec URL bulunamadı. APPS_SCRIPT_URL ayarı doldurulabilir.');
+    return;
+  }
+
+  var sep = url.indexOf('?') === -1 ? '?' : '&';
+  var pingUrl = url + sep + 'mode=warm&callback=sunucuIsitildi&_t=' + new Date().getTime();
+
+  try {
+    var res = UrlFetchApp.fetch(pingUrl, {
+      muteHttpExceptions: true,
+      followRedirects: true
+    });
+    Logger.log('Dengeli warm sonucu: HTTP ' + res.getResponseCode());
+  } catch (err) {
+    Logger.log('Sunucu ısıtma hatası: ' + (err.stack || err.message));
+  }
+}
+
+
+function sheetByNameEsnek_(ss, ad) {
+  if (!ss) return null;
+  var hedef = temizle_(ad);
+  if (!hedef) return null;
+
+  var tamEslesen = ss.getSheetByName(hedef);
+  if (tamEslesen) return tamEslesen;
+
+  var hedefNorm = hedef.toUpperCase();
+  var sheets = ss.getSheets();
+  for (var i = 0; i < sheets.length; i++) {
+    if (temizle_(sheets[i].getName()).toUpperCase() === hedefNorm) {
+      return sheets[i];
+    }
+  }
+  return null;
+}
+
+// =====================================================
+// VERİ OKUMA (SHEETS)
+// =====================================================
+function anaDosyadanVeriGetir_(kimlik) {
+  if (!kimlik || !kimlik.blok || !kimlik.daire) throw new Error('Daire bilgisi eksik.');
+  var cacheKey = 'daire_v2_' + cacheKeyParcasi_(kimlik.blok) + '_' + cacheKeyParcasi_(kimlik.daire);
+  var cached   = cacheJsonOku_(cacheKey);
+  if (cached) return cached;
+
+  var sonuc = sheetstenDaireOku_(kimlik);
+  cacheJsonYaz_(cacheKey, sonuc, DAIRE_CACHE_SURE);
+  return sonuc;
+}
+
+function daireKey_(v) {
+  var s = temizle_(v);
+  if (/^\d+$/.test(s)) return String(Number(s));
+  return s.toUpperCase();
+}
+
+function daireSatiriBul_(data, daire) {
+  var hedef = daireKey_(daire);
+  for (var i = 0; i < data.length - 1; i++) {
+    var hucre = daireKey_(data[i][COL_DAIRE]);
+    if (hucre !== hedef) continue;
+
+    var v2 = daireKey_(data[i + 1][COL_DAIRE]);
+    if (v2 !== '' && v2 !== '0' && v2 !== hedef) {
+      throw new Error(
+        'Veri yapısı hatalı — ' + hedef + ' için 2. satır farklı daireye ait.'
+      );
+    }
+    return { veri1: data[i], veri2: data[i + 1] };
+  }
+  return null;
+}
+
+function blokSatirMapCacheKey_(blok) {
+  return 'blok_satir_v2_' + cacheKeyParcasi_(blok);
+}
+
+function blokDaireSatirMapi_(sheet, blok) {
+  var cacheKey = blokSatirMapCacheKey_(blok);
+  var cached = cacheJsonOku_(cacheKey);
+  if (cached) return cached;
+
+  var map = {};
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return map;
+
+  // Eski ağır yöntem tüm tabloyu okuyordu. Burada sadece A sütunu okunur.
+  var col = sheet.getRange(1, COL_DAIRE + 1, lastRow, 1).getValues();
+  for (var i = 0; i < col.length - 1; i++) {
+    var key = daireKey_(col[i][0]);
+    if (!key || key === '0') continue;
+    if (map[key] === undefined) map[key] = i + 1; // Google Sheets satır numarası, 1 tabanlı.
+  }
+
+  cacheJsonYaz_(cacheKey, map, DAIRE_INDEX_CACHE_SURE);
+  return map;
+}
+
+function sheetstenDaireOku_(kimlik) {
+  var sheet = sheetByNameEsnek_(anaDosyasi_(), kimlik.blok);
+  if (!sheet) throw new Error(kimlik.blok + ' isimli blok sekmesi bulunamadı.');
+
+  var hedef = daireKey_(kimlik.daire);
+  var map = blokDaireSatirMapi_(sheet, kimlik.blok);
+  var rowNo = map[hedef];
+  var maxCols = Math.min(Math.max(BLOK_OKUMA_KOLON_SAYISI, COL_NOTLAR + 1), sheet.getMaxColumns());
+
+  if (rowNo && rowNo < sheet.getLastRow()) {
+    var rows = sheet.getRange(rowNo, 1, 2, maxCols).getValues();
+    var v1 = daireKey_(rows[0][COL_DAIRE]);
+    var v2 = daireKey_(rows[1][COL_DAIRE]);
+
+    // Bayat index durumunda yanlış daire göstermek yerine index'i silip güvenli aramaya düş.
+    if (v1 === hedef && (v2 === '' || v2 === '0' || v2 === hedef)) {
+      return { veri1: rows[0], veri2: rows[1] };
+    }
+
+    try { CacheService.getScriptCache().remove(cacheKeyTam_(blokSatirMapCacheKey_(kimlik.blok))); } catch (e) {}
+  }
+
+  // Index cache bayat kaldıysa bir defaya mahsus tam aralıkla güvenli arama yap.
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) throw new Error(kimlik.blok + ' ' + kimlik.daire + ' için satır bulunamadı.');
+
+  var data = sheet.getRange(1, 1, lastRow, maxCols).getValues();
+  var ham = daireSatiriBul_(data, kimlik.daire);
+  if (!ham) throw new Error(kimlik.blok + ' ' + kimlik.daire + ' için satır bulunamadı.');
+  return ham;
+}
+
+function kisaKodCacheKey_(kod) {
+  return 'kod_v2_' + cacheKeyParcasi_(kod);
+}
+
+function kisaKodMapiOku_() {
+  var cached = cacheJsonOku_('kod_map_v2');
+  if (cached) return cached;
+
+  var map = {};
+  var ss = linkDosyasi_();
+  var sh = ss.getSheetByName(LINK_SHEET_ADI);
+  if (!sh || sh.getLastRow() < 2) return map;
+
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 6).getValues();
+  for (var i = 0; i < data.length; i++) {
+    var kod = temizle_(data[i][0]);
+    if (!kod) continue;
+    var durum = data[i].length >= 6
+                ? temizle_(String(data[i][5])).toUpperCase()
+                : 'AKTIF';
+    if (durum === 'PASIF') continue;
+    map[kod] = { blok: temizle_(data[i][1]), daire: temizle_(data[i][2]) };
+  }
+
+  cacheJsonYaz_('kod_map_v2', map, KOD_MAP_CACHE_SURE);
+  return map;
+}
+
+function kisaKoddanDaireBul_(kod) {
+  kod = temizle_(kod);
+  if (!kod) return null;
+
+  var cacheKey = kisaKodCacheKey_(kod);
+  var cached = cacheJsonOku_(cacheKey);
+  if (cached) return cached;
+
+  var map = kisaKodMapiOku_();
+  var res = map[kod] || null;
+  if (res) cacheJsonYaz_(cacheKey, res, KOD_CACHE_SURE);
+  return res;
+}
+
+// =====================================================
+// LOG — YENİ v3.7.1: 2 dk mükerrer önleme eklendi
+// =====================================================
+function trackingLogKaydet_(blok, daire) {
+  var cache   = CacheService.getScriptCache();
+  var lockKey = cacheKeyTam_('visit_' + blok + '_' + daire);
+
+  // Aynı daire son 2 dakikada kayıt yaptırdıysa atla
+  if (cache.get(lockKey)) return;
+  cache.put(lockKey, '1', 120);
+
+  var lock = LockService.getScriptLock();
+  var kilitAlindi = false;
+  try { kilitAlindi = lock.tryLock(800); } catch (e) { kilitAlindi = false; }
+  if (!kilitAlindi) return;
+
+  try {
+    var ss = linkDosyasi_();
+    var sh = ss.getSheetByName(LOG_SHEET_ADI);
+    if (!sh) {
+      sh = ss.insertSheet(LOG_SHEET_ADI);
+      sh.getRange(1, 1, 1, 3).setValues([['ZAMAN', 'BLOK', 'DAIRE']]);
+      sh.getRange(1, 1, 1, 3)
+        .setFontWeight('bold').setBackground('#07111f').setFontColor('#f4d47c');
+      sh.setFrozenRows(1);
+    }
+    var simdi = Utilities.formatDate(new Date(), 'Europe/Istanbul', 'yyyy-MM-dd HH:mm:ss');
+    sh.appendRow([simdi, blok, daire]);
+  } finally {
+    try { lock.releaseLock(); } catch (e2) {}
+  }
+}
+
+function logOzetDashboardOlustur() {
+  var ss     = linkDosyasi_();
+  var logSh  = ss.getSheetByName(LOG_SHEET_ADI);
+  var ozetSh = ss.getSheetByName(LOG_OZET_ADI);
+
+  if (!logSh || logSh.getLastRow() < 2) {
+    SpreadsheetApp.getUi().alert('📋 Henüz log kaydı yok veya LOG sekmesi boş.'); return;
+  }
+  if (!ozetSh) {
+    ozetSh = ss.insertSheet(LOG_OZET_ADI);
+    ozetSh.getRange(1, 1, 1, 3).setValues([['BLOK_DAIRE','TOPLAM_TIKLANMA','SON_TIKLANMA']]);
+    ozetSh.getRange(1, 1, 1, 3)
+          .setFontWeight('bold').setBackground('#07111f').setFontColor('#f4d47c');
+    ozetSh.setFrozenRows(1);
+  } else if (ozetSh.getLastRow() > 1) {
+    ozetSh.getRange(2, 1, ozetSh.getLastRow() - 1, ozetSh.getLastColumn()).clearContent();
+  }
+
+  var raw    = logSh.getRange(2, 1, logSh.getLastRow() - 1, 3).getValues();
+  var counts = {};
+  var lasts  = {};
+
+  for (var i = 0; i < raw.length; i++) {
+    var key = temizle_(raw[i][1]) + ' ' + temizle_(raw[i][2]);
+    var t   = raw[i][0];
+    counts[key] = (counts[key] || 0) + 1;
+    if (!lasts[key] || t > lasts[key]) lasts[key] = t;
+  }
+
+  var out = [];
+  for (var k in counts) out.push([k, counts[k], lasts[k]]);
+  out.sort(function(a, b) { return b[1] - a[1]; });
+  if (out.length > 0) ozetSh.getRange(2, 1, out.length, 3).setValues(out);
+  ozetSh.autoResizeColumns(1, 3);
+  SpreadsheetApp.getUi().alert('📊 ZIYARET_LOG_OZET Dashboard güncellendi.');
+}
+
+function logKayitlariniTemizle() {
+  var ui  = SpreadsheetApp.getUi();
+  var ans = ui.alert(
+    '⚠️ LOG TEMİZLEME',
+    'Tüm ziyaret geçmişini silmek istediğinize emin misiniz?',
+    ui.ButtonSet.YES_NO
+  );
+  if (ans !== ui.Button.YES) return;
+  var ss  = linkDosyasi_();
+  var sh  = ss.getSheetByName(LOG_SHEET_ADI);
+  if (sh && sh.getLastRow() > 1) sh.deleteRows(2, sh.getLastRow() - 1);
+  var osh = ss.getSheetByName(LOG_OZET_ADI);
+  if (osh && osh.getLastRow() > 1) osh.deleteRows(2, osh.getLastRow() - 1);
+  ui.alert('🗑️ Tüm log kayıtları temizlendi.');
+}
+
+function logKontrolEt() {
+  var ss = linkDosyasi_();
+  var sh = ss.getSheetByName(LOG_SHEET_ADI);
+  var c  = sh ? sh.getLastRow() - 1 : 0;
+  SpreadsheetApp.getUi().alert('📋 Mevcut log satır sayısı: ' + (c < 0 ? 0 : c));
+}
+
+// =====================================================
+// YARDIMCI FONKSİYONLAR
+// =====================================================
+function temizle_(v) {
+  return String(v === null || v === undefined ? '' : v).trim();
+}
+
+function muafMi_(v) {
+  return temizle_(v).toLowerCase().indexOf('muaf') > -1;
+}
+
+function sayiYap_(v) {
+  if (typeof v === 'number') return isNaN(v) ? 0 : v;
+
+  var s = temizle_(v);
+  if (!s || s.toLowerCase().indexOf('muaf') > -1) return 0;
+
+  s = s.replace(/\s/g, '')
+       .replace(/₺/g, '')
+       .replace(/TL/gi, '')
+       .trim();
+
+  var negatif = false;
+  if (/^\(.*\)$/.test(s)) {
+    negatif = true;
+    s = s.replace(/[()]/g, '');
+  }
+  if (s.charAt(0) === '-') negatif = true;
+
+  s = s.replace(/[^0-9,.-]/g, '');
+  if (!s) return 0;
+
+  var lastComma = s.lastIndexOf(',');
+  var lastDot   = s.lastIndexOf('.');
+
+  if (lastComma > -1 && lastDot > -1) {
+    // Hem nokta hem virgül varsa en sondaki işaret kuruş ayıracı kabul edilir.
+    if (lastComma > lastDot) {
+      s = s.replace(/\./g, '').replace(',', '.');
+    } else {
+      s = s.replace(/,/g, '');
+    }
+  } else if (lastDot > -1) {
+    var noktaParcalari = s.split('.');
+    var sonNoktaParca = noktaParcalari[noktaParcalari.length - 1];
+    var tumNoktalarBinlik = noktaParcalari.length > 1 &&
+      sonNoktaParca.length === 3 &&
+      noktaParcalari.slice(1).every(function(p) { return p.length === 3; });
+
+    // 1.234 veya 12.345.678 gibi değerler binlik ayraçtır; 1234.56 ise ondalık kabul edilir.
+    s = tumNoktalarBinlik ? s.replace(/\./g, '') : s;
+  } else if (lastComma > -1) {
+    var virgulParcalari = s.split(',');
+    var sonVirgulParca = virgulParcalari[virgulParcalari.length - 1];
+    var tumVirgullerBinlik = virgulParcalari.length > 1 &&
+      sonVirgulParca.length === 3 &&
+      virgulParcalari.slice(1).every(function(p) { return p.length === 3; });
+
+    s = tumVirgullerBinlik ? s.replace(/,/g, '') : s.replace(',', '.');
+  }
+
+  s = s.replace(/[^0-9.-]/g, '');
+  var n = parseFloat(s);
+  if (isNaN(n)) return 0;
+  return negatif ? -Math.abs(n) : n;
+}
+
+
+function paraFormatla_(n) {
+  n = sayiYap_(n);
+  var sign  = n < 0 ? '-' : '';
+  n         = Math.abs(n);
+  var fixed = n.toFixed(2);
+  var parts = fixed.split('.');
+  var tam   = parts[0];
+  var kurus = parts[1];
+  var arr   = [];
+  var i     = tam.length;
+  while (i > 3) { i -= 3; arr.unshift(tam.substr(i, 3)); }
+  arr.unshift(tam.substr(0, i));
+  return sign + arr.join('.') + ',' + kurus + ' TL';
+}
+
