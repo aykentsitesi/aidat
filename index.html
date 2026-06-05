@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AYKENT AIDAT PANELİ — v3.8.8 Dengeli Hız Final: localStorage hızlı gösterim + hafif sunucu ısıtma uyumu -->
+<!-- AYKENT AIDAT PANELİ — v3.8.17 Eski Mobil Görünüm: v3.8.16 stabil JS + v3.8.4 mobil CSS geri dönüş -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -112,8 +112,8 @@
         /* ───────────────────────────────────────────────────────────── */
 
         .duyuru{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(90deg,#8a6a22,#d6b25e,#8a6a22);color:#111827;text-align:center;padding:10px;font-size:15px;line-height:1.25;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.22);display:none;}
-        .wrap{display:flex;justify-content:center;min-height:100vh;padding-top:41px;}
-        .card{width:100%;max-width:560px;background:white;padding-bottom:20px;box-shadow:0 16px 48px rgba(0,0,0,.16);border-radius:0 0 20px 20px; display: none;}
+        .wrap{display:block;min-height:100vh;padding-top:41px;}
+        .card{width:100%;max-width:none;min-height:calc(100vh - 41px);background:white;padding-bottom:20px;box-shadow:none;border-radius:0; display: none;}
         
         .hero{background:radial-gradient(circle at top left,#355d93 0,#0f2747 42%,#07111f 100%);color:white;text-align:center;padding:26px 20px 22px;border-bottom:4px solid var(--gold);}
         .blok{font-size:31px;line-height:1.1;font-weight:950;letter-spacing:.2px;}
@@ -175,6 +175,8 @@
         .error-card{background:#fff1f2;color:#be123c;padding:26px 20px;border-radius:18px;margin:40px auto;max-width:400px;text-align:center;box-shadow:0 10px 25px rgba(190,18,60,0.15);border:1px solid #fecdd3;display:none;font-size:16px;line-height:1.4;}
         .error-card strong { font-size: 19px; display: block; margin-bottom: 8px; font-weight: 950; }
 
+        /* ── MOBİL TAM GENİŞLİK + ORANTILI BÜYÜK YAZI MODU ──
+           Yatay taşma kapalıdır; kullanıcı sadece dikey kaydırır. */
         @media(max-width:580px){
             .card{max-width:100%;box-shadow:none;border-radius:0;}
             .summary{gap:5px;}
@@ -264,7 +266,7 @@
         // Dengeli hız modu: varsa son panel verisini hemen gösterir, güncel veriyi arkadan yeniler.
         // Local cache en fazla 5 dakika kullanılır; gerçek güncel veri arkadan kontrol edilir.
         const API_SOFT_TIMEOUT_MS = 6000;
-        const API_HARD_TIMEOUT_MS = 15000;
+        const API_HARD_TIMEOUT_MS = 12000;
         const LOCAL_PANEL_CACHE_MS = 5 * 60 * 1000;
         var apiSoftTimeoutHandle = null;
         var apiTimeoutHandle = null;
@@ -272,6 +274,7 @@
         var panelKod = '';
         var ziyaretLogGonderildi = false;
         var panelCacheGosterildi = false;
+        var aktifApiScript = null;
 
         function temizleKurus(deger) {
             if (typeof deger === 'string') {
@@ -327,6 +330,23 @@
             } catch(e) {}
         }
 
+        function lokalPanelCacheSil_(kod) {
+            try {
+                if(window.localStorage && kod) localStorage.removeItem(lokalCacheKey_(kod));
+            } catch(e) {}
+        }
+
+        function hataCacheIleBastirilabilir_(mesaj) {
+            mesaj = guvenliMetin(mesaj, '').toLowerCase();
+            // Link pasif/geçersiz veya kayıt gerçekten yoksa cache'i saklama; geçici sistem hatasında sakla.
+            if(mesaj.indexOf('geçersiz') > -1 || mesaj.indexOf('gecersiz') > -1) return false;
+            if(mesaj.indexOf('pasif') > -1) return false;
+            if(mesaj.indexOf('kayıt') > -1 || mesaj.indexOf('kayit') > -1) return false;
+            if(mesaj.indexOf('bulunamad') > -1) return false;
+            if(mesaj.indexOf('hatalı link') > -1 || mesaj.indexOf('hatali link') > -1) return false;
+            return true;
+        }
+
         function apiZamanlayicilariTemizle_() {
             if(apiSoftTimeoutHandle) {
                 clearTimeout(apiSoftTimeoutHandle);
@@ -365,15 +385,17 @@
             apiTimeoutHandle = setTimeout(function() {
                 if(apiCevapGeldi) return;
                 if(panelCacheGosterildi) {
-                    // Son kayıt ekranda durur; güncel istek yetişmediyse kullanıcıya kırmızı hata basma.
+                    // Cache ekrandayken kullanıcıyı kırmızı hata kartına düşürme.
+                    toast("Güncel kontrol uzun sürdü; son kayıt gösteriliyor");
                     return;
                 }
                 showError("Bağlantı Zaman Aşımı", "Sistem şu anda yanıt vermedi. Lütfen internet bağlantınızı kontrol edip sayfayı yenileyiniz veya site yönetimi ile görüşünüz.");
             }, API_HARD_TIMEOUT_MS);
 
-            var script = document.createElement('script');
-            script.src = GOOGLE_API_URL + '?k=' + encodeURIComponent(kod) + '&callback=veriYukle&_t=' + Date.now();
-            script.onerror = function() {
+            aktifApiScript = document.createElement('script');
+            aktifApiScript.async = true;
+            aktifApiScript.src = GOOGLE_API_URL + '?k=' + encodeURIComponent(kod) + '&callback=veriYukle&_t=' + Date.now();
+            aktifApiScript.onerror = function() {
                 if(apiCevapGeldi) return;
                 apiZamanlayicilariTemizle_();
                 if(panelCacheGosterildi) {
@@ -382,7 +404,7 @@
                 }
                 showError("Bağlantı Hatası", "Aidat sistemiyle bağlantı kurulamadı. Lütfen daha sonra tekrar deneyiniz veya site yönetimi ile görüşünüz.");
             };
-            document.body.appendChild(script);
+            document.body.appendChild(aktifApiScript);
         }
 
         if (document.readyState === 'loading') {
@@ -396,8 +418,10 @@
             if(!cacheRender) {
                 apiCevapGeldi = true;
                 apiZamanlayicilariTemizle_();
+                if(aktifApiScript) {
+                    try { setTimeout(function(){ if(aktifApiScript) aktifApiScript.remove(); aktifApiScript = null; }, 0); } catch(e) {}
+                }
             }
-            hataKapat_();
 
             var loader = document.getElementById('loader-container');
             if(loader) {
@@ -407,19 +431,33 @@
             }
             
             if(!data || data.hata) {
-                // Sunucu bilinçli hata döndürdüyse eski cache ile saklama; hatayı göster.
-                showError("Kayıt Bulunamadı", (data ? guvenliMetin(data.hata, "Sistem hatası.") : "Sistem hatası.") + " Lütfen bilgilerinizi kontrol ediniz.");
+                var mesaj = data ? guvenliMetin(data.hata, "Sistem hatası.") : "Sistem hatası.";
+                if(panelCacheGosterildi && !cacheRender && hataCacheIleBastirilabilir_(mesaj)) {
+                    // Geçici sunucu/bağlantı hatasında çalışan eski paneli bozma.
+                    toast("Güncel veri alınamadı; son kayıt gösteriliyor");
+                    var gf = document.getElementById('panel-guncelleme');
+                    if(gf && gf.textContent.indexOf('son kayıt') === -1) gf.textContent += " · son kayıt gösteriliyor";
+                    return;
+                }
+                if(!cacheRender) lokalPanelCacheSil_(panelKod);
+                hataKapat_();
+                showError("Kayıt Bulunamadı", mesaj + " Lütfen bilgilerinizi kontrol ediniz.");
                 return;
             }
 
+            hataKapat_();
             data = guvenliPanelVerisi(data);
             if(!cacheRender) lokalPanelCacheYaz_(panelKod, data);
 
-            if(data.duyuru) {
-                var d = document.getElementById('duyuru');
-                d.textContent = data.duyuru;
-                d.style.display = 'block';
+            var d = document.getElementById('duyuru');
+            if(d) {
+                d.textContent = data.duyuru || '';
+                d.style.display = data.duyuru ? 'block' : 'none';
             }
+            var n = document.getElementById('panel-not');
+            if(n) { n.textContent = ''; n.style.display = 'none'; }
+            var waAlanSifirla = document.getElementById('whatsapp-alan');
+            if(waAlanSifirla) waAlanSifirla.style.display = 'none';
 
             document.getElementById('panel-baslik').textContent = data.blok + " · DAİRE " + data.daire;
             document.getElementById('panel-isim').textContent = data.isim;
