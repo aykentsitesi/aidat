@@ -112,8 +112,8 @@
         /* ───────────────────────────────────────────────────────────── */
 
         .duyuru{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(90deg,#8a6a22,#d6b25e,#8a6a22);color:#111827;text-align:center;padding:10px;font-size:15px;line-height:1.25;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.22);display:none;}
-        .wrap{display:flex;justify-content:center;min-height:100vh;padding-top:41px;}
-        .card{width:100%;max-width:560px;background:white;padding-bottom:20px;box-shadow:0 16px 48px rgba(0,0,0,.16);border-radius:0 0 20px 20px; display: none;}
+        .wrap{display:block;min-height:100vh;padding-top:41px;}
+        .card{width:100%;max-width:none;min-height:calc(100vh - 41px);background:white;padding-bottom:20px;box-shadow:none;border-radius:0; display: none;}
         
         .hero{background:radial-gradient(circle at top left,#355d93 0,#0f2747 42%,#07111f 100%);color:white;text-align:center;padding:26px 20px 22px;border-bottom:4px solid var(--gold);}
         .blok{font-size:31px;line-height:1.1;font-weight:950;letter-spacing:.2px;}
