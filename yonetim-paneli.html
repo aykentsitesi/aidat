@@ -18,6 +18,7 @@
       color: #e5e7eb;
     }
 
+    /* Header */
     .header {
       background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(10px);
@@ -62,12 +63,86 @@
       color: #d1d5db;
     }
 
+    /* Main Content */
     main {
       max-width: 1200px;
       margin: 0 auto;
       padding: 32px 16px;
     }
 
+    /* URL Input */
+    .url-section {
+      border-bottom: 1px solid rgba(168, 85, 247, 0.15);
+      background: rgba(30, 27, 75, 0.3);
+      backdrop-filter: blur(10px);
+      margin-bottom: 32px;
+      padding: 20px 0;
+    }
+
+    .url-toggle {
+      background: none;
+      border: none;
+      color: #c4b5fd;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      transition: color 0.2s;
+    }
+
+    .url-toggle:hover {
+      color: #ddd6fe;
+    }
+
+    .chevron {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      transition: transform 0.3s;
+    }
+
+    .chevron.open {
+      transform: rotate(90deg);
+    }
+
+    .url-input-container {
+      display: none;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(168, 85, 247, 0.15);
+    }
+
+    .url-input-container.visible {
+      display: block;
+    }
+
+    .url-input-container input {
+      width: 100%;
+      padding: 10px 16px;
+      background: #1e1b4b;
+      color: white;
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+
+    .url-input-container input:focus {
+      outline: none;
+      border-color: #a855f7;
+      background: #2e1b4b;
+    }
+
+    .url-help {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+
+    /* Alert Box */
     .alert {
       margin-bottom: 24px;
       padding: 16px;
@@ -122,6 +197,7 @@
       white-space: pre-wrap;
     }
 
+    /* Groups */
     .group {
       margin-bottom: 32px;
     }
@@ -135,6 +211,7 @@
       border-bottom: 1px solid rgba(168, 85, 247, 0.2);
     }
 
+    /* Buttons Grid */
     .buttons-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -198,6 +275,7 @@
       to { transform: rotate(360deg); }
     }
 
+    /* Footer */
     .footer {
       margin-top: 48px;
       padding: 24px;
@@ -209,6 +287,7 @@
       font-size: 13px;
     }
 
+    /* Responsive */
     @media (max-width: 768px) {
       .header h1 {
         font-size: 22px;
@@ -227,6 +306,7 @@
   </style>
 </head>
 <body>
+  <!-- Header -->
   <header class="header">
     <div class="container">
       <div class="header-content">
@@ -234,4 +314,186 @@
           <h1>🏢 Aykent Aidat Panel</h1>
           <p>Yönetim Kontrol Paneli</p>
         </div>
-        <div class="version-badge">
+        <div class="version-badge">v3.9.0</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- URL Input Section -->
+  <div class="url-section">
+    <div class="container">
+      <button class="url-toggle" id="urlToggle">
+        <span class="chevron" id="chevron">›</span>
+        Apps Script Web App URL (İsteğe Bağlı)
+      </button>
+      <div class="url-input-container" id="urlContainer">
+        <input 
+          type="text" 
+          id="scriptUrl" 
+          placeholder="https://script.google.com/macros/d/DEPLOYMENT_ID/usercallback"
+        />
+        <div class="url-help">
+          💡 AYARLAR sekmesi → APPS_SCRIPT_URL sütunundan kopyalayın
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Alert -->
+    <div id="alert" style="display: none;"></div>
+
+    <!-- Grupos de Funções -->
+    <div id="functions"></div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>📋 Tüm işlemler Google Sheets ve Apps Script üzerinde çalışır</p>
+      <p>⚠️ Büyük veri işlemleri biraz zaman alabilir</p>
+    </div>
+  </main>
+
+  <script>
+    const functions = [
+      {
+        grup: '⚙️ AYARLAR',
+        butonlar: [
+          { label: '🔧 AYARLAR Sekmesi', func: 'ayarlarSekmesiniOlustur', renk: 'bg-purple' }
+        ]
+      },
+      {
+        grup: '💰 MALİ TAKİP',
+        butonlar: [
+          { label: '💰 Mali Tabloyu Güncelle', func: 'maliTablosunuGuncelle', renk: 'bg-green' },
+          { label: '✅ Devir Doğrulama', func: 'devirDogrulamaRaporuGoster', renk: 'bg-blue' }
+        ]
+      },
+      {
+        grup: '👁️ ZİYARET TAKİP',
+        butonlar: [
+          { label: '👁️ Ziyaret Takip Paneli', func: 'ziyaretTakipPaneliniGuncelle', renk: 'bg-indigo' }
+        ]
+      },
+      {
+        grup: '📱 WHATSAPP',
+        butonlar: [
+          { label: '📱 WhatsApp Linklerini Oluştur', func: 'whatsappLinkleriniOlustur', renk: 'bg-emerald' }
+        ]
+      },
+      {
+        grup: '📊 LOG & RAPOR',
+        butonlar: [
+          { label: '📊 Log Özet Dashboard', func: 'logOzetDashboardOlustur', renk: 'bg-cyan' },
+          { label: '🗑️ Log Temizle', func: 'logKayitlariniTemizle', renk: 'bg-red' },
+          { label: '📋 Log Sayısı', func: 'logKontrolEt', renk: 'bg-orange' }
+        ]
+      },
+      {
+        grup: '🔄 CACHE & BAKIM',
+        butonlar: [
+          { label: '🔄 Önbelleği Temizle', func: 'cacheTumunuTemizle', renk: 'bg-yellow' },
+          { label: '🧹 JSON Kalıntılarını Temizle', func: 'jsonHazirVeriKalintilariniTemizle', renk: 'bg-amber' }
+        ]
+      },
+      {
+        grup: '🔥 SUNUCU ISITMASI',
+        butonlar: [
+          { label: '🔥 Sunucu Isıtma Kur', func: 'sunucuIsitmaTriggerKur', renk: 'bg-rose' },
+          { label: '🧊 Sunucu Isıtma Kaldır', func: 'sunucuIsitmaTriggerKaldir', renk: 'bg-slate' }
+        ]
+      }
+    ];
+
+    let loading = false;
+
+    // URL Toggle
+    document.getElementById('urlToggle').addEventListener('click', () => {
+      const container = document.getElementById('urlContainer');
+      const chevron = document.getElementById('chevron');
+      container.classList.toggle('visible');
+      chevron.classList.toggle('open');
+    });
+
+    // Render Functions
+    const functionsHtml = functions.map(group => `
+      <div class="group">
+        <h2 class="group-title">${group.grup}</h2>
+        <div class="buttons-grid">
+          ${group.butonlar.map(btn => `
+            <button class="btn ${btn.renk}" onclick="callFunction('${btn.func}')">
+              <span id="spinner-${btn.func}"></span>
+              ${btn.label}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('functions').innerHTML = functionsHtml;
+
+    // Call Function
+    async function callFunction(funcName) {
+      if (loading) return;
+
+      const scriptUrl = document.getElementById('scriptUrl').value;
+      
+      if (!scriptUrl) {
+        showAlert('error', '⚠️ URL Gerekli', 'Lütfen Apps Script Web App URL\'sini girin.');
+        return;
+      }
+
+      loading = true;
+      const spinner = document.getElementById(`spinner-${funcName}`);
+      if (spinner) spinner.innerHTML = '<span class="spinner"></span>';
+
+      try {
+        // Google Apps Script'e istek gönder
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ func: funcName })
+        });
+
+        const data = await response.json();
+
+        showAlert(
+          'success',
+          `✅ ${funcName}`,
+          data.message || 'İşlem tamamlandı!'
+        );
+      } catch (error) {
+        showAlert(
+          'error',
+          '❌ Hata',
+          error.message || 'Beklenmeyen bir hata oluştu.\n\nURL\'yi kontrol edin.'
+        );
+      } finally {
+        loading = false;
+        if (spinner) spinner.innerHTML = '';
+      }
+    }
+
+    // Show Alert
+    function showAlert(type, title, message) {
+      const alert = document.getElementById('alert');
+      const icon = type === 'success' ? '✓' : '!';
+      
+      alert.className = `alert ${type}`;
+      alert.innerHTML = `
+        <div class="alert-icon">${icon}</div>
+        <div class="alert-content">
+          <h3>${title}</h3>
+          <p>${message}</p>
+        </div>
+      `;
+      alert.style.display = 'flex';
+
+      // Auto hide after 6 seconds
+      setTimeout(() => {
+        alert.style.display = 'none';
+      }, 6000);
+    }
+  </script>
+</body>
+</html>
